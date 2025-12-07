@@ -12,6 +12,7 @@ const Logs = () => {
   const toast = useToast();
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [noPermission, setNoPermission] = useState(false);
   const [filters, setFilters] = useState({
     log_id: '',
     type: '',
@@ -27,6 +28,7 @@ const Logs = () => {
   const fetchLogs = async () => {
     try {
       setLoading(true);
+      setNoPermission(false);
       const params = {};
       if (filters.log_id) params.log_id = filters.log_id;
       if (filters.type) params.type = filters.type;
@@ -36,12 +38,18 @@ const Logs = () => {
 
       const res = await logApi.getList(params);
       if (res.code === 200) {
-        // Handle both array and single object response
-        const logData = Array.isArray(res.data) ? res.data : (res.data.message ? [res.data] : []);
+        // API返回 data.logs 数组
+        const logData = res.data?.logs || (Array.isArray(res.data) ? res.data : []);
         setLogs(logData);
+      } else if (res.code === 403) {
+        setNoPermission(true);
       }
     } catch (error) {
-      toast.error('获取日志列表失败');
+      if (error?.code === 403 || error?.message?.includes('管理员')) {
+        setNoPermission(true);
+      } else {
+        toast.error('获取日志列表失败');
+      }
     } finally {
       setLoading(false);
     }
@@ -155,6 +163,21 @@ const Logs = () => {
     { value: '2', label: 'WARN' },
     { value: '3', label: 'ERROR' },
   ];
+
+  // 无权限提示
+  if (noPermission) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] bg-white rounded-xl shadow-sm">
+        <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
+          <AlertTriangle size={32} className="text-yellow-600" />
+        </div>
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">需要管理员权限</h2>
+        <p className="text-gray-500 text-center max-w-md">
+          系统日志功能仅对管理员开放。请使用管理员账号登录。
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-fadeIn">
