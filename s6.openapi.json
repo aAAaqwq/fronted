@@ -1,0 +1,3805 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "默认模块",
+    "description": "",
+    "version": "1.0.0"
+  },
+  "tags": [],
+  "paths": {
+    "/api/v1/users/register": {
+      "post": {
+        "summary": "用户注册",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "example": "{{token-admin}}",
+            "schema": {
+              "type": "string",
+              "default": "{{token-admin}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "email",
+                  "password"
+                ]
+              },
+              "example": {
+                "email": "{{$internet.email}}",
+                "password": "aaqwq123"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "uid": {
+                          "type": "integer"
+                        },
+                        "username": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string"
+                        },
+                        "role": {
+                          "type": "string"
+                        },
+                        "create_at": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "uid",
+                        "username",
+                        "email",
+                        "role",
+                        "create_at"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/v1/users/login": {
+      "post": {
+        "summary": "用户登录",
+        "deprecated": false,
+        "description": "用户登录，返回JWT Token",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "example": "{{token-admin}}",
+            "schema": {
+              "type": "string",
+              "default": "{{token-admin}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "email",
+                  "password"
+                ]
+              },
+              "example": "{\r\n    \"email\": \"ffxlmf.tt636@126.com\",\r\n    // \"email\": \"rn1hdu9@sohu.com\",\r\n    \"password\": \"aaqwq123\"\r\n}"
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "token": {
+                          "type": "string"
+                        },
+                        "user": {
+                          "type": "object",
+                          "properties": {
+                            "uid": {
+                              "type": "integer"
+                            },
+                            "username": {
+                              "type": "string"
+                            },
+                            "email": {
+                              "type": "string"
+                            },
+                            "role": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "uid",
+                            "email",
+                            "username",
+                            "role"
+                          ]
+                        },
+                        "expires_in": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "token",
+                        "user",
+                        "expires_in"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/v1/users/password": {
+      "put": {
+        "summary": "修改密码",
+        "deprecated": false,
+        "description": "修改当前用户密码",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "example": "{{token-admin}}",
+            "schema": {
+              "type": "string",
+              "default": "{{token-admin}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "uid": {
+                    "type": "integer"
+                  },
+                  "old_password": {
+                    "type": "string"
+                  },
+                  "new_password": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "old_password",
+                  "new_password",
+                  "uid"
+                ]
+              },
+              "example": "{\r\n    // \"uid\": 643821424317710336,\r\n    \"old_password\": \"uH2sr7AW5Gjbg3O\",\r\n    \"new_password\": \"vxLqX4UmcNHm5yX\"\r\n}"
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "uid": {
+                          "type": "integer"
+                        },
+                        "username": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string"
+                        },
+                        "role": {
+                          "type": "string"
+                        },
+                        "update_at": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "update_at",
+                        "username",
+                        "uid",
+                        "email",
+                        "role"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/v1/users/all": {
+      "get": {
+        "summary": "获取用户列表",
+        "deprecated": false,
+        "description": "获取用户列表，支持分页与筛选，管理员专用",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "example": 0,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort_order",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "example": "{{token-admin}}",
+            "schema": {
+              "type": "string",
+              "default": "{{token-admin}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "uid": {
+                                "type": "integer"
+                              },
+                              "username": {
+                                "type": "string"
+                              },
+                              "email": {
+                                "type": "string"
+                              },
+                              "role": {
+                                "type": "string"
+                              },
+                              "create_at": {
+                                "type": "string"
+                              },
+                              "update_at": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "uid",
+                              "username",
+                              "email",
+                              "role",
+                              "create_at",
+                              "update_at"
+                            ]
+                          }
+                        },
+                        "pagination": {
+                          "type": "object",
+                          "properties": {
+                            "page": {
+                              "type": "integer"
+                            },
+                            "page_size": {
+                              "type": "integer"
+                            },
+                            "total": {
+                              "type": "integer"
+                            },
+                            "total_pages": {
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "page",
+                            "page_size",
+                            "total",
+                            "total_pages"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "items",
+                        "pagination"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/v1/users": {
+      "get": {
+        "summary": "获取指定用户信息",
+        "deprecated": false,
+        "description": "获取指定用户信息，管理员",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "uid",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": 0,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "email",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "username",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "example": "{{token-admin}}",
+            "schema": {
+              "type": "string",
+              "default": "{{token-admin}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "uid": {
+                          "type": "integer"
+                        },
+                        "username": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string"
+                        },
+                        "role": {
+                          "type": "string"
+                        },
+                        "create_at": {
+                          "type": "string"
+                        },
+                        "update_at": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "uid",
+                        "username",
+                        "email",
+                        "role",
+                        "create_at",
+                        "update_at"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "put": {
+        "summary": "更新指定用户信息",
+        "deprecated": false,
+        "description": "更新指定用户信息(不包含密码)\n\n普通用户更新自己\n管理员可更新所有",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "example": "{{token-admin}}",
+            "schema": {
+              "type": "string",
+              "default": "{{token-admin}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "uid": {
+                    "type": "integer",
+                    "title": "空就默认是自己的uid"
+                  },
+                  "username": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "uid": 644469647256469500,
+                "username": "黎cc",
+                "email": "3253843484@qq.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "uid": {
+                          "type": "integer"
+                        },
+                        "username": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string"
+                        },
+                        "role": {
+                          "type": "string"
+                        },
+                        "update_at": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "uid",
+                        "username",
+                        "email",
+                        "role",
+                        "update_at"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "delete": {
+        "summary": "删除指定用户",
+        "deprecated": false,
+        "description": "管理员删除指定用户",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "uid",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "example": 644469647256469500,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "example": "{{token-admin}}",
+            "schema": {
+              "type": "string",
+              "default": "{{token-admin}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "null"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ],
+                  "$ref": "#/components/schemas/%E4%B8%80%E8%88%AC%E5%93%8D%E5%BA%94%E6%A8%A1%E5%9E%8B"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/v1/users/bind_devices": {
+      "get": {
+        "summary": "获取用户绑定的设备列表",
+        "deprecated": false,
+        "description": " 获取用户绑定的设备列表\n\n普通用户：只能查看自己的设备列表\n管理员：可以查看任意用户的设备列表\n以后没有指定UID的都默认从token中获取",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "uid",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "example": 650705084060942300,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": 1,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": 10,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "dev_type",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "dev_status",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "permission_level",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "example": "{{token-admin}}",
+            "schema": {
+              "type": "string",
+              "default": "{{token-admin}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "dev_list": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "dev_id": {
+                                      "type": "integer"
+                                    },
+                                    "dev_name": {
+                                      "type": "string",
+                                      "title": "默认<dev_type>_<dev_id>"
+                                    },
+                                    "dev_type": {
+                                      "type": "string"
+                                    },
+                                    "dev_power": {
+                                      "type": "integer"
+                                    },
+                                    "dev_status": {
+                                      "type": "integer"
+                                    },
+                                    "model": {
+                                      "type": "string"
+                                    },
+                                    "version": {
+                                      "type": "string"
+                                    },
+                                    "sampling_rate": {
+                                      "type": "integer"
+                                    },
+                                    "offline_threshold": {
+                                      "type": "integer"
+                                    },
+                                    "upload_interval": {
+                                      "type": "integer"
+                                    },
+                                    "extended_config": {
+                                      "type": "object",
+                                      "properties": {}
+                                    },
+                                    "create_at": {
+                                      "type": "string"
+                                    },
+                                    "update_at": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "dev_type"
+                                  ]
+                                }
+                              }
+                            },
+                            "required": [
+                              "dev_list"
+                            ]
+                          }
+                        },
+                        "pagination": {
+                          "type": "object",
+                          "properties": {
+                            "page": {
+                              "type": "integer"
+                            },
+                            "page_size": {
+                              "type": "integer"
+                            },
+                            "total": {
+                              "type": "integer"
+                            },
+                            "total_pages": {
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "page",
+                            "page_size",
+                            "total",
+                            "total_pages"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "pagination"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/v1/devices": {
+      "post": {
+        "summary": "创建设备",
+        "deprecated": false,
+        "description": "添加新的传感器设备及其信息，一般结合用户绑定设备使用",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "example": "{{token-admin}}",
+            "schema": {
+              "type": "string",
+              "default": "{{token-admin}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "dev_id": {
+                    "type": "integer",
+                    "title": "自动生成"
+                  },
+                  "dev_name": {
+                    "type": "string",
+                    "title": "默认<dev_type>_<dev_id>"
+                  },
+                  "dev_type": {
+                    "type": "string"
+                  },
+                  "dev_power": {
+                    "type": "integer"
+                  },
+                  "dev_status": {
+                    "type": "integer"
+                  },
+                  "model": {
+                    "type": "string"
+                  },
+                  "version": {
+                    "type": "string"
+                  },
+                  "sampling_rate": {
+                    "type": "integer"
+                  },
+                  "offline_threshold": {
+                    "type": "integer"
+                  },
+                  "upload_interval": {
+                    "type": "integer"
+                  },
+                  "extended_config": {
+                    "type": "object",
+                    "properties": {}
+                  },
+                  "create_at": {
+                    "type": "string",
+                    "title": "自动生成"
+                  },
+                  "update_at": {
+                    "type": "string",
+                    "title": "自动生成"
+                  }
+                },
+                "type": "object",
+                "required": [
+                  "dev_type"
+                ]
+              },
+              "example": "{\n    // \"dev_id\": 17,\n    \"dev_name\": \"emg_{{$string.uuid}}\",\n    \"dev_type\": \"emg\",\n    // \"dev_model\": \"fugiat occaecat esse ipsum\",\n    // \"dev_power\": 98,\n    \"dev_status\": 0,\n    // \"firmware_version\": \"ex\",\n    // \"sampling_frequency\": 54,\n    // \"data_upload_interval\": 85,\n    // \"offline_threshold\": 48,\n    // \"create_at\": \"2026-06-13 11:03:32\",\n    // \"update_at\": \"2026-05-25\",\n    // \"extended_config\": {}\n}"
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "dev_id": {
+                      "type": "integer"
+                    },
+                    "dev_name": {
+                      "type": "string"
+                    },
+                    "dev_type": {
+                      "type": "string"
+                    },
+                    "dev_model": {
+                      "type": "string"
+                    },
+                    "dev_power": {
+                      "type": "integer"
+                    },
+                    "dev_status": {
+                      "type": "integer"
+                    },
+                    "firmware_version": {
+                      "type": "string"
+                    },
+                    "sampling_frequency": {
+                      "type": "integer"
+                    },
+                    "data_upload_interval": {
+                      "type": "integer"
+                    },
+                    "offline_threshold": {
+                      "type": "integer"
+                    },
+                    "extended_config": {
+                      "type": "object",
+                      "properties": {}
+                    },
+                    "create_at": {
+                      "type": "string"
+                    },
+                    "update_at": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "dev_name",
+                    "dev_type",
+                    "create_at",
+                    "update_at",
+                    "dev_power",
+                    "dev_status",
+                    "dev_id"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "get": {
+        "summary": "查询指定设备列表",
+        "deprecated": false,
+        "description": "获取传感器设备列表: 支持高级筛选。\n\n普通用户：获取自己绑定的设备列表\n管理员：获取所有设备列表\n业务规则：\n后端通过token获取uid以及角色身份，如果是普通用户则查相应绑定的设备，再进一步筛选",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "dev_list",
+            "in": "query",
+            "description": "用户绑定的设备列表，不输入的话自动查询库",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "nullable": true
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": 1,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": 10,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "dev_status",
+            "in": "query",
+            "description": "设备状态筛选，0-在线，1-离线，2-异常",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "description": "支持模糊查询：设备名，dev_type，dev_model等",
+            "required": false,
+            "example": "9ae94e",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "description": "默认按时间desc排序",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort_order",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "example": "{{token-admin}}",
+            "schema": {
+              "type": "string",
+              "default": "{{token-admin}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "dev_id": {
+                                "type": "integer"
+                              },
+                              "dev_name": {
+                                "type": "string",
+                                "title": "默认<dev_type>_<dev_id>"
+                              },
+                              "dev_type": {
+                                "type": "string"
+                              },
+                              "dev_power": {
+                                "type": "integer"
+                              },
+                              "dev_status": {
+                                "type": "integer"
+                              },
+                              "model": {
+                                "type": "string"
+                              },
+                              "version": {
+                                "type": "string"
+                              },
+                              "sampling_rate": {
+                                "type": "integer"
+                              },
+                              "offline_threshold": {
+                                "type": "integer"
+                              },
+                              "upload_interval": {
+                                "type": "integer"
+                              },
+                              "extended_config": {
+                                "type": "object",
+                                "properties": {}
+                              },
+                              "create_at": {
+                                "type": "string"
+                              },
+                              "update_at": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "dev_type"
+                            ]
+                          }
+                        },
+                        "pagination": {
+                          "type": "object",
+                          "properties": {
+                            "page": {
+                              "type": "integer"
+                            },
+                            "page_size": {
+                              "type": "integer"
+                            },
+                            "total": {
+                              "type": "integer"
+                            },
+                            "total_pages": {
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "page",
+                            "page_size",
+                            "total",
+                            "total_pages"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "items",
+                        "pagination"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "put": {
+        "summary": "更新指定设备信息 ",
+        "deprecated": false,
+        "description": "更新指定设备的详细信息\n\n普通用户：只能更新有（w或rw）权限的设备\n管理员：可以更新所有设备",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "example": "{{token-admin}}",
+            "schema": {
+              "type": "string",
+              "default": "{{token-admin}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "dev_id": {
+                    "type": "integer"
+                  },
+                  "dev_name": {
+                    "type": "string",
+                    "title": "默认<dev_type>_<dev_id>"
+                  },
+                  "dev_type": {
+                    "type": "string"
+                  },
+                  "dev_power": {
+                    "type": "integer"
+                  },
+                  "dev_status": {
+                    "type": "integer"
+                  },
+                  "model": {
+                    "type": "string"
+                  },
+                  "version": {
+                    "type": "string"
+                  },
+                  "sampling_rate": {
+                    "type": "integer"
+                  },
+                  "offline_threshold": {
+                    "type": "integer"
+                  },
+                  "upload_interval": {
+                    "type": "integer"
+                  },
+                  "extended_config": {
+                    "type": "object",
+                    "properties": {}
+                  },
+                  "create_at": {
+                    "type": "string"
+                  },
+                  "update_at": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "dev_id",
+                  "dev_type"
+                ]
+              },
+              "example": "{\r\n    \"dev_id\": 650705353989570560,\r\n    \"dev_name\": \"temperature_01\",\r\n    \"dev_type\": \"temperature\",\r\n    // \"dev_power\": 68,\r\n    // \"dev_status\": 92,\r\n    // \"model\": \"quis sit reprehenderit ex\",\r\n    // \"version\": \"incididunt dolor mollit\",\r\n    // \"sampling_rate\": 53,\r\n    // \"offline_threshold\": 62,\r\n    // \"upload_interval\": 64,\r\n    // \"extended_config\": {},\r\n    // \"create_at\": \"2026-02-28 17:13:31\",\r\n    // \"update_at\": \"2025-04-05\"\r\n}"
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "dev_id": {
+                          "type": "integer"
+                        },
+                        "dev_name": {
+                          "type": "string",
+                          "title": "默认<dev_type>_<dev_id>"
+                        },
+                        "dev_type": {
+                          "type": "string"
+                        },
+                        "dev_power": {
+                          "type": "integer"
+                        },
+                        "dev_status": {
+                          "type": "integer"
+                        },
+                        "model": {
+                          "type": "string"
+                        },
+                        "version": {
+                          "type": "string"
+                        },
+                        "sampling_rate": {
+                          "type": "integer"
+                        },
+                        "offline_threshold": {
+                          "type": "integer"
+                        },
+                        "upload_interval": {
+                          "type": "integer"
+                        },
+                        "extended_config": {
+                          "type": "object",
+                          "properties": {}
+                        },
+                        "create_at": {
+                          "type": "string"
+                        },
+                        "update_at": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "dev_type"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "delete": {
+        "summary": "删除指定设备信息 ",
+        "deprecated": false,
+        "description": "删除指定设备的详细信息\n\n普通用户：只能删除有（w或rw）权限的设备，后端判断\n管理员：可以删除所有设备",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "dev_id",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "example": 1,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "example": "{{token-admin}}",
+            "schema": {
+              "type": "string",
+              "default": "{{token-admin}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "null"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/v1/devices/bind_user": {
+      "post": {
+        "summary": "绑定用户到设备",
+        "deprecated": false,
+        "description": "将x用户绑定到x设备\n\n普通用户：只能将自己绑定到设备\n管理员：可以将任意用户绑定到设备\n\n业务规则：一个设备最多绑定3个用户,需要检查，若满则不给绑定",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "example": "{{token-admin}}",
+            "schema": {
+              "type": "string",
+              "default": "{{token-admin}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "uid": {
+                    "type": "integer",
+                    "title": "默认自己"
+                  },
+                  "dev_id": {
+                    "type": "integer"
+                  },
+                  "permission_level": {
+                    "type": "string",
+                    "title": "默认rw"
+                  }
+                },
+                "required": [
+                  "dev_id"
+                ]
+              },
+              "example": "{\r\n    // \"uid\": 0,\r\n    \"dev_id\": 650705353989570560,\r\n    \"permission_level\": \"rw\"\r\n}"
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "uid": {
+                          "type": "integer"
+                        },
+                        "dev_id": {
+                          "type": "integer"
+                        },
+                        "permission_level": {
+                          "type": "string",
+                          "title": "权限级别:r,w,rw"
+                        },
+                        "bind_at": {
+                          "type": "string"
+                        },
+                        "update_at": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "dev_id"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/v1/devices/unbind_user": {
+      "delete": {
+        "summary": "解绑用户设备",
+        "deprecated": false,
+        "description": "解绑x用户和x设备的关系\n\n普通用户：只能解绑自己（需要有w或rw权限，后端判断）\n管理员：可以解绑任意用户\n",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "example": "{{token-admin}}",
+            "schema": {
+              "type": "string",
+              "default": "{{token-admin}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "uid": {
+                    "type": "integer"
+                  },
+                  "dev_id": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "dev_id"
+                ]
+              },
+              "example": "{\n    // \"uid\": 8,\n    \"dev_id\": 650705353989570560\n}"
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "null"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/v1/devices/bind_users": {
+      "get": {
+        "summary": "获取指定设备绑定信息",
+        "deprecated": false,
+        "description": "获取指定设备的绑定信息",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "dev_id",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": 650705353989570600,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "example": "{{token-admin}}",
+            "schema": {
+              "type": "string",
+              "default": "{{token-admin}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "bound_users": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "uid": {
+                                "type": "integer"
+                              },
+                              "dev_id": {
+                                "type": "integer"
+                              },
+                              "permission_level": {
+                                "type": "string",
+                                "title": "权限级别:r,w,rw"
+                              },
+                              "bind_at": {
+                                "type": "string"
+                              },
+                              "update_at": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "dev_id"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "bound_users"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/v1/devices/statistics": {
+      "get": {
+        "summary": "获取设备统计信息 ",
+        "deprecated": false,
+        "description": "获取传感器设备统计信息:包括总数，各种状态的数量，设备种类数\n\n普通用户只统计有权限的设备\n管理员统计所有设备",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "example": "{{token-admin}}",
+            "schema": {
+              "type": "string",
+              "default": "{{token-admin}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "total": {
+                          "type": "integer"
+                        },
+                        "online": {
+                          "type": "integer"
+                        },
+                        "offline": {
+                          "type": "integer"
+                        },
+                        "abnormal": {
+                          "type": "integer"
+                        },
+                        "type": {
+                          "type": "integer",
+                          "title": "设备种类数"
+                        }
+                      },
+                      "required": [
+                        "total",
+                        "online",
+                        "offline",
+                        "abnormal",
+                        "type"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/v1/warning_info": {
+      "post": {
+        "summary": "上传告警信息",
+        "deprecated": false,
+        "description": "上传告警信息\n\n相关的异常检测：\n1.检查设备数据中的quality异常值\n2.检查设备中的异常状态0/2\n",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "example": "{{token-admin}}",
+            "schema": {
+              "type": "string",
+              "default": "{{token-admin}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "alert_id": {
+                    "type": "integer"
+                  },
+                  "data_id": {
+                    "type": "integer",
+                    "title": "出现警告的数据"
+                  },
+                  "dev_id": {
+                    "type": "integer",
+                    "title": "出现警告的设备"
+                  },
+                  "alert_type": {
+                    "type": "string",
+                    "title": "dev/data"
+                  },
+                  "alert_status": {
+                    "type": "string",
+                    "title": "active/resolved/ignored"
+                  },
+                  "alert_message": {
+                    "type": "string"
+                  },
+                  "triggered_at": {
+                    "type": "string",
+                    "title": "告警事件上传时间"
+                  },
+                  "resolved_at": {
+                    "type": "string",
+                    "title": "告警事件解决时间"
+                  }
+                },
+                "required": [
+                  "alert_type",
+                  "alert_status"
+                ]
+              },
+              "example": "{\r\n    // \"alert_id\": 45,\r\n    // \"data_id\": 57,\r\n    \"dev_id\": 650705353989570560,\r\n    \"alert_type\": \"dev\",\r\n    \"alert_status\": \"active\",\r\n    \"alert_message\": \"dev abnormal boom\",\r\n    // \"triggered_at\": \"laborum\",\r\n    // \"resolved_at\": \"\"\r\n}"
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "alert_id": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "alert_id"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "get": {
+        "summary": "查询告警信息",
+        "deprecated": false,
+        "description": "查询告警信息\n\n主要根据alert_type查询\n\n角色权限：\n普通用户只能查询到自己有权限的设备的告警信息\n管理员可查询所有\n",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "alert_status",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "alert_type",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": "10",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": "1",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "dev_id",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "example": 0,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "data_id",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "example": "{{token-admin}}",
+            "schema": {
+              "type": "string",
+              "default": "{{token-admin}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "warning_lists": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "alert_id": {
+                                "type": "integer"
+                              },
+                              "data_id": {
+                                "type": "integer",
+                                "title": "出现警告的数据"
+                              },
+                              "dev_id": {
+                                "type": "integer",
+                                "title": "出现警告的设备"
+                              },
+                              "alert_type": {
+                                "type": "string",
+                                "title": "dev/data"
+                              },
+                              "alert_status": {
+                                "type": "string",
+                                "title": "active/resolved/ignored"
+                              },
+                              "alert_message": {
+                                "type": "string"
+                              },
+                              "triggered_at": {
+                                "type": "string",
+                                "title": "告警事件上传时间"
+                              },
+                              "resolved_at": {
+                                "type": "string",
+                                "title": "告警事件解决时间"
+                              }
+                            },
+                            "required": [
+                              "alert_type",
+                              "alert_status"
+                            ]
+                          }
+                        },
+                        "pagination": {
+                          "type": "object",
+                          "properties": {
+                            "page": {
+                              "type": "integer"
+                            },
+                            "page_size": {
+                              "type": "integer"
+                            },
+                            "total": {
+                              "type": "integer"
+                            },
+                            "total_pages": {
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "page",
+                            "page_size",
+                            "total",
+                            "total_pages"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "warning_lists",
+                        "pagination"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "put": {
+        "summary": "更新告警信息",
+        "deprecated": false,
+        "description": "更新告警信息\n\n更新告警状态,如果是resolved同时添加resolve时间",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "alert_id",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "example": 652327056398237700,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "alert_status",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "example": "resolved",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "example": "{{token-admin}}",
+            "schema": {
+              "type": "string",
+              "default": "{{token-admin}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "alert_id": {
+                          "type": "integer"
+                        },
+                        "data_id": {
+                          "type": "integer",
+                          "title": "出现警告的数据"
+                        },
+                        "dev_id": {
+                          "type": "integer",
+                          "title": "出现警告的设备"
+                        },
+                        "alert_type": {
+                          "type": "string",
+                          "title": "dev/data"
+                        },
+                        "alert_status": {
+                          "type": "string",
+                          "title": "active/resolved/ignored"
+                        },
+                        "alert_message": {
+                          "type": "string"
+                        },
+                        "triggered_at": {
+                          "type": "string",
+                          "title": "告警事件上传时间"
+                        },
+                        "resolved_at": {
+                          "type": "string",
+                          "title": "告警事件解决时间"
+                        }
+                      },
+                      "required": [
+                        "alert_type",
+                        "alert_status"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "delete": {
+        "summary": "删除告警信息",
+        "deprecated": false,
+        "description": "删除某条告警信息",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "alert_id",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": 652002593496514600,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "example": "{{token-admin}}",
+            "schema": {
+              "type": "string",
+              "default": "{{token-admin}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "null"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/v1/logs": {
+      "post": {
+        "summary": "日志上传",
+        "deprecated": false,
+        "description": "上传日志\n\n管理员",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "example": "{{token-admin}}",
+            "schema": {
+              "type": "string",
+              "default": "{{token-admin}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string"
+                  },
+                  "level": {
+                    "type": "integer"
+                  },
+                  "message": {
+                    "type": "string"
+                  },
+                  "user_agent": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "level",
+                  "message",
+                  "user_agent"
+                ]
+              },
+              "example": {
+                "type": "info",
+                "level": 4,
+                "message": "aa login",
+                "user_agent": "chorme"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "log_id": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "log_id"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "get": {
+        "summary": "日志查询",
+        "deprecated": false,
+        "description": "日志查询\n\n管理员",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "log_id",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "start_time",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "end_time",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "level",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "example": "{{token-admin}}",
+            "schema": {
+              "type": "string",
+              "default": "{{token-admin}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "log_id": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "delete": {
+        "summary": "日志删除",
+        "deprecated": false,
+        "description": "日志删除\n\n管理员",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "log_id",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": 652343890925207600,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "example": "{{token-admin}}",
+            "schema": {
+              "type": "string",
+              "default": "{{token-admin}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "null"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/v1/device/data": {
+      "post": {
+        "summary": "上传传感器数据",
+        "deprecated": false,
+        "description": "设备上传传感器元数据+时序数据/文件数据,支持批量上传时序数据\n\n时序数据存储到InfluxDB\n文件数据（视频、音频、图片）存储到MinIO   \n元数据存储到MySQL的metadata表\n",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "example": "{{token-admin}}",
+            "schema": {
+              "type": "string",
+              "default": "{{token-admin}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "series_data": {
+                    "properties": {
+                      "points": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "timestamp": {
+                              "type": "number"
+                            },
+                            "value": {
+                              "type": "number"
+                            },
+                            "quality_score": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "timestamp",
+                            "value"
+                          ]
+                        },
+                        "title": "数据点"
+                      }
+                    },
+                    "type": "object",
+                    "required": [
+                      "points"
+                    ]
+                  },
+                  "file_data": {
+                    "type": "object",
+                    "properties": {
+                      "file_path": {
+                        "type": "string"
+                      },
+                      "bucket_name": {
+                        "type": "string",
+                        "title": "默认与data_type一致"
+                      }
+                    },
+                    "required": [
+                      "file_path"
+                    ]
+                  },
+                  "metadata": {
+                    "type": "object",
+                    "properties": {
+                      "data_id": {
+                        "type": "integer"
+                      },
+                      "dev_id": {
+                        "type": "integer"
+                      },
+                      "uid": {
+                        "type": "integer"
+                      },
+                      "data_type": {
+                        "type": "string"
+                      },
+                      "quality_score": {
+                        "type": "number"
+                      },
+                      "timestamp": {
+                        "type": "string"
+                      },
+                      "extra_data": {
+                        "type": "object",
+                        "properties": {}
+                      }
+                    },
+                    "required": [
+                      "data_id",
+                      "dev_id",
+                      "uid",
+                      "data_type",
+                      "quality_score",
+                      "timestamp",
+                      "extra_data"
+                    ]
+                  }
+                },
+                "required": [
+                  "metadata"
+                ],
+                "$ref": "#/components/schemas/%E4%BC%A0%E6%84%9F%E5%99%A8%E6%95%B0%E6%8D%AE"
+              },
+              "example": "{\n    \"series_data\": {\n        \"points\": [\n            {\n              \"timestamp\": {{$date.timestamp}},\n                \"measurement\": \"ecg\",\n                \"tags\": {\n                    // \"dev_id\": \"81\",\n                    // \"data_id\": \"14\",\n                    \"quality_score\": \"{{$number.float(min=0,max=100,fractionDigits=1)}}\"\n                },\n                \"fileds\": {\n                    \"value\":{{$number.float(min=0,max=200,fractionDigits=1)}}\n                }\n            },\n            {\n                \"timestamp\": {{$date.timestamp}}+5,\n                \"measurement\": \"ecg\",\n                \"tags\": {\n                    // \"dev_id\": \"81\",\n                    // \"data_id\": \"14\",\n                    \"quality_score\": \"{{$number.float(min=0,max=100,fractionDigits=1)}}\"\n                },\n                \"fileds\": {\n                    \"ch1\":{{$number.float(min=0,max=200,fractionDigits=1)}},\n                    \"ch2\":{{$number.float(min=0,max=200,fractionDigits=1)}},\n                    \"ch3\":{{$number.float(min=0,max=200,fractionDigits=1)}},\n                    \"ch4\":{{$number.float(min=0,max=200,fractionDigits=1)}},\n                    \"ch5\":{{$number.float(min=0,max=200,fractionDigits=1)}}\n                }\n            },\n            {\n                 \"timestamp\": {{$date.timestamp}}+10,\n                \"measurement\": \"ecg\",\n                \"tags\": {\n                    // \"dev_id\": \"81\",\n                    // \"data_id\": \"14\",\n                    \"quality_score\": \"{{$number.float(min=0,max=100,fractionDigits=1)}}\"\n                },\n                \"fileds\": {\n                    \"ch1\":{{$number.float(min=0,max=200,fractionDigits=1)}},\n                    \"ch2\":{{$number.float(min=0,max=200,fractionDigits=1)}},\n                    \"ch3\":{{$number.float(min=0,max=200,fractionDigits=1)}},\n                    \"ch4\":{{$number.float(min=0,max=200,fractionDigits=1)}},\n                    \"ch5\":{{$number.float(min=0,max=200,fractionDigits=1)}}\n                }\n            }\n        ]\n    },\n    \"file_data\": {\n        // \"file_path\": \"/etc/namedb\",\n        // \"bucket_name\": \"完雨欣\",\n        // \"bucket_key\": \"eiusmod exercitation veniam\"\n    },\n    \"metadata\": {\n  // \"data_id\": 99,\n        \"dev_id\": 650705353989570560,\n        // \"uid\": 74,\n        \"data_type\": \"time_series\",\n        \"quality_score\": \"{{$number.float(min=0,max=100,fractionDigits=1)}}\",\n        // \"timestamp\":{{$date.timestamp}},\n        \"extra_data\": {}\n    }\n}"
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "data_id": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "data_id"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/v1/device/data/timeseries": {
+      "post": {
+        "summary": "查询时序数据",
+        "deprecated": false,
+        "description": "查询符合条件的传感器时序数据列表: 支持高级筛选功能。主要用于筛选出某时间段的时序数据。不输入其他条件则默认返回某设备某用户某传感器数据类型的所有数据点\n\n普通用户：只能查询有权限的设备数据\n管理员：可以查询所有设备数据\n角色身份根据token中的role字段区分",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "example": "{{token-admin}}",
+            "schema": {
+              "type": "string",
+              "default": "{{token-admin}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "dev_id": {
+                    "type": "integer"
+                  },
+                  "start_time": {
+                    "type": "integer"
+                  },
+                  "end_time": {
+                    "type": "integer"
+                  },
+                  "measurement": {
+                    "type": "string"
+                  },
+                  "tags": {
+                    "type": "object",
+                    "properties": {},
+                    "title": "精准匹配相应索引字段，如\"data_id\"=xxx"
+                  },
+                  "fileds": {
+                    "type": "object",
+                    "properties": {},
+                    "title": "实际要存储的字段名及值，如\"value=66.6\""
+                  },
+                  "aggregate": {
+                    "type": "string",
+                    "title": "聚合：\"\", \"mean\", \"max\", \"min\", \"sum\" 等,建议不填"
+                  },
+                  "down_sample_interval": {
+                    "type": "string",
+                    "title": "下采样间隔,建议不填"
+                  },
+                  "limit_points": {
+                    "type": "integer",
+                    "title": "每次限制的查询数据点，默认6000"
+                  }
+                },
+                "required": [
+                  "dev_id",
+                  "start_time",
+                  "end_time",
+                  "measurement"
+                ]
+              },
+              "example": "{\n    \"dev_id\":  650705353989570560,\n    \"start_time\": 119999,\n    \"end_time\": {{$date.timestamp}},\n    \"measurement\": \"ecg\",\n    \"tags\": {\n        // \"dev_id\":\"650705353989570560\"\n    },\n    \"fileds\": {},\n    // \"aggregate\": \"minim\",\n    // \"down_sample_interval\": \"ut\",\n    \"limit_points\": 64\n}"
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "points": {
+                          "type": "array",
+                          "items": {
+                            "properties": {
+                              "measurement": {
+                                "type": "string"
+                              },
+                              "tags": {
+                                "type": "object",
+                                "properties": {
+                                  "dev_id": {
+                                    "type": "string"
+                                  },
+                                  "data_id": {
+                                    "type": "string"
+                                  },
+                                  "quality_score": {
+                                    "type": "string"
+                                  }
+                                },
+                                "title": "自动创建"
+                              },
+                              "fileds": {
+                                "type": "object",
+                                "properties": {},
+                                "title": "任意个数值，一般为1个，多通道则多个，自动解析为k-v类型的map"
+                              },
+                              "timestamp": {
+                                "type": "number"
+                              }
+                            },
+                            "type": "object",
+                            "required": [
+                              "measurement",
+                              "fileds",
+                              "timestamp"
+                            ]
+                          },
+                          "title": "满足条件的数据点"
+                        }
+                      },
+                      "required": [
+                        "points"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "delete": {
+        "summary": "删除时序数据",
+        "deprecated": false,
+        "description": "删除某dev的某个时间范围的时序数据：仅删除元数据。\n暂时不支持删除influxdb3的数据，其有自动删除策略。\n\n普通用户：只能删除有权限的设备数据\n管理员：可以删除所有设备数据\n角色身份根据token中的role字段区分",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "example": "{{token-admin}}",
+            "schema": {
+              "type": "string",
+              "default": "{{token-admin}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "dev_id": {
+                    "type": "integer"
+                  },
+                  "start_time": {
+                    "type": "string"
+                  },
+                  "end_time": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "dev_id"
+                ]
+              },
+              "example": {
+                "dev_id": 650705353989570600,
+                "start_time": "2025-12-03 20:34:41",
+                "end_time": "2025-12-03 20:58:50"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "null"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/v1/device/data/statistic": {
+      "get": {
+        "summary": "时序数据统计",
+        "deprecated": false,
+        "description": "统计设备的传感器数据：数据总数，异常数据数量(quality<30)\n以dev_id和measurement选定某种数据某设备上传的数据\n\n普通用户：只能查询有权限的设备数据 \n管理员：可以查询所有设备数据\n角色身份根据token中的role字段区分",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "dev_id",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": 650705353989570600,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "measurement",
+            "in": "query",
+            "description": "哪种数据类型的表，如temperature传感器则相应存的measurement为temperature.",
+            "required": true,
+            "example": "ecg",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "example": "{{token-admin}}",
+            "schema": {
+              "type": "string",
+              "default": "{{token-admin}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "total": {
+                          "type": "number"
+                        },
+                        "abnormal": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "total"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/v1/device/data/file/list": {
+      "get": {
+        "summary": "查询文件数据列表",
+        "deprecated": false,
+        "description": "查询符合条件的传感器文件数据列表:列出所有某设备下某种数据类型的所有数据文件列表信息。\n\n普通用户：只能查询有权限的设备数据\n管理员：可以查询所有设备数据\n角色身份根据token中的role字段区分",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": 1,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": 10,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "bucket_name",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": "image",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "dev_id",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": 650705353989570600,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "example": "{{token-admin}}",
+            "schema": {
+              "type": "string",
+              "default": "{{token-admin}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "bucket_key": {
+                                "type": "string",
+                                "title": "数据库文件路径"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "size": {
+                                "type": "integer",
+                                "title": "单位字节"
+                              },
+                              "content_type": {
+                                "type": "string"
+                              },
+                              "preview_url": {
+                                "type": "string"
+                              },
+                              "last_modified": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "bucket_key",
+                              "size",
+                              "content_type",
+                              "last_modified",
+                              "name"
+                            ]
+                          }
+                        },
+                        "pagination": {
+                          "type": "object",
+                          "properties": {
+                            "page": {
+                              "type": "integer"
+                            },
+                            "page_size": {
+                              "type": "integer"
+                            },
+                            "total": {
+                              "type": "integer"
+                            },
+                            "total_pages": {
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "page",
+                            "page_size",
+                            "total",
+                            "total_pages"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "items",
+                        "pagination"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/v1/device/data/file/download": {
+      "get": {
+        "summary": "下载文件数据 ",
+        "deprecated": false,
+        "description": "返回相应文件下载URL，强制浏览器下载\n\n需要token",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "bucket_key",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": "650705353989570560/2025/12/02/logical_design.png",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bucket_name",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": "image",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "example": "{{token-admin}}",
+            "schema": {
+              "type": "string",
+              "default": "{{token-admin}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "download_url": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "download_url"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/v1/device/data/file": {
+      "delete": {
+        "summary": "删除文件数据",
+        "deprecated": false,
+        "description": "删除（清空）某设备的传感器数据：包括元数据与文件数据\n\n普通用户：只能删除有权限的设备数据\n管理员：可以删除所有设备数据\n角色身份根据token中的role字段区分",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "example": "{{token-admin}}",
+            "schema": {
+              "type": "string",
+              "default": "{{token-admin}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "bucket_key": {
+                    "type": "string"
+                  },
+                  "bucket_name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "bucket_name",
+                  "bucket_key"
+                ]
+              },
+              "example": {
+                "bucket_key": "650705353989570560/2025/12/02/abstract_design.png",
+                "bucket_name": "image"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "null"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "分页": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer"
+          },
+          "page_size": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer"
+          },
+          "total_pages": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "page",
+          "page_size",
+          "total",
+          "total_pages"
+        ]
+      },
+      "一般响应模型": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "null"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data"
+        ]
+      },
+      "传感器设备": {
+        "type": "object",
+        "properties": {
+          "dev_id": {
+            "type": "integer"
+          },
+          "dev_name": {
+            "type": "string",
+            "title": "默认<dev_type>_<dev_id>"
+          },
+          "dev_type": {
+            "type": "string"
+          },
+          "dev_power": {
+            "type": "integer"
+          },
+          "dev_status": {
+            "type": "integer"
+          },
+          "model": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "sampling_rate": {
+            "type": "integer"
+          },
+          "offline_threshold": {
+            "type": "integer"
+          },
+          "upload_interval": {
+            "type": "integer"
+          },
+          "extended_config": {
+            "type": "object",
+            "properties": {}
+          },
+          "create_at": {
+            "type": "string"
+          },
+          "update_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "dev_type"
+        ]
+      },
+      "用户设备绑定模型": {
+        "type": "object",
+        "properties": {
+          "uid": {
+            "type": "integer"
+          },
+          "dev_id": {
+            "type": "integer"
+          },
+          "permission_level": {
+            "type": "string",
+            "title": "权限级别:r,w,rw"
+          },
+          "bind_at": {
+            "type": "string"
+          },
+          "update_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "dev_id"
+        ]
+      },
+      "时序数据": {
+        "type": "object",
+        "properties": {
+          "points": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "measurement": {
+                  "type": "string"
+                },
+                "tags": {
+                  "type": "object",
+                  "properties": {
+                    "dev_id": {
+                      "type": "string"
+                    },
+                    "data_id": {
+                      "type": "string"
+                    },
+                    "quality_score": {
+                      "type": "string"
+                    }
+                  },
+                  "title": "自动创建"
+                },
+                "fileds": {
+                  "type": "object",
+                  "properties": {},
+                  "title": "任意个数值，一般为1个，多通道则多个，自动解析为k-v类型的map"
+                },
+                "timestamp": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "measurement",
+                "fileds",
+                "timestamp"
+              ]
+            }
+          }
+        }
+      },
+      "时序数据点": {
+        "type": "object",
+        "properties": {
+          "measurement": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "object",
+            "properties": {
+              "dev_id": {
+                "type": "string"
+              },
+              "data_id": {
+                "type": "string"
+              },
+              "quality_score": {
+                "type": "string"
+              }
+            },
+            "title": "自动创建"
+          },
+          "fileds": {
+            "type": "object",
+            "properties": {},
+            "title": "任意个数值，一般为1个，多通道则多个，自动解析为k-v类型的map"
+          },
+          "timestamp": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "timestamp",
+          "fileds",
+          "measurement"
+        ]
+      },
+      "元数据": {
+        "type": "object",
+        "properties": {
+          "data_id": {
+            "type": "integer"
+          },
+          "dev_id": {
+            "type": "integer"
+          },
+          "data_type": {
+            "type": "string",
+            "title": "time_series/file_data"
+          },
+          "quality_score": {
+            "type": "string",
+            "title": "数据质量:0-100"
+          },
+          "timestamp": {
+            "type": "integer"
+          },
+          "batch_size": {
+            "type": "string",
+            "title": "这批数据的数量，相对时序数据"
+          },
+          "extra_data": {
+            "type": "object",
+            "properties": {},
+            "title": "额外数据可承载文件bucket_key"
+          }
+        },
+        "required": [
+          "dev_id",
+          "data_type"
+        ]
+      },
+      "传感器数据": {
+        "type": "object",
+        "properties": {
+          "series_data": {
+            "properties": {
+              "points": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "measurement": {
+                      "type": "string"
+                    },
+                    "tags": {
+                      "type": "object",
+                      "properties": {
+                        "dev_id": {
+                          "type": "string"
+                        },
+                        "data_id": {
+                          "type": "string"
+                        },
+                        "quality_score": {
+                          "type": "string"
+                        }
+                      },
+                      "title": "自动创建"
+                    },
+                    "fileds": {
+                      "type": "object",
+                      "properties": {},
+                      "title": "任意个数值，一般为1个，多通道则多个，自动解析为k-v类型的map"
+                    },
+                    "timestamp": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "measurement",
+                    "fileds",
+                    "timestamp"
+                  ]
+                }
+              }
+            },
+            "type": "object"
+          },
+          "file_data": {
+            "type": "object",
+            "properties": {
+              "bucket_name": {
+                "type": "string",
+                "title": "所存bucket名字,建议与dev_type一致，如传感器设备类型为image，则bucket_name为image"
+              },
+              "bucket_key": {
+                "type": "string",
+                "title": "数据库中文件key，默认为dev_id/YYYY/MM/DD/<filename>"
+              },
+              "file_path": {
+                "type": "string",
+                "title": "本地文件路径"
+              }
+            },
+            "required": [
+              "bucket_name",
+              "file_path"
+            ]
+          },
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "data_id": {
+                "type": "integer"
+              },
+              "dev_id": {
+                "type": "integer"
+              },
+              "data_type": {
+                "type": "string",
+                "title": "time_series/file_data"
+              },
+              "quality_score": {
+                "type": "string",
+                "title": "数据质量:0-100"
+              },
+              "timestamp": {
+                "type": "integer"
+              },
+              "batch_size": {
+                "type": "string",
+                "title": "这批数据的数量，相对时序数据"
+              },
+              "extra_data": {
+                "type": "object",
+                "properties": {},
+                "title": "额外数据可承载文件bucket_key"
+              }
+            },
+            "required": [
+              "dev_id",
+              "data_type"
+            ]
+          }
+        },
+        "required": [
+          "metadata"
+        ]
+      },
+      "时序数据查找": {
+        "type": "object",
+        "properties": {
+          "dev_id": {
+            "type": "integer"
+          },
+          "start_time": {
+            "type": "integer"
+          },
+          "end_time": {
+            "type": "integer"
+          },
+          "measurement": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "object",
+            "properties": {},
+            "title": "精准匹配相应索引字段，如\"data_id\"=xxx"
+          },
+          "fileds": {
+            "type": "object",
+            "properties": {},
+            "title": "实际要存储的字段名及值，如\"value=66.6\""
+          },
+          "aggregate": {
+            "type": "string",
+            "title": "聚合：\"\", \"mean\", \"max\", \"min\", \"sum\" 等,建议不填"
+          },
+          "down_sample_interval": {
+            "type": "string",
+            "title": "下采样间隔,建议不填"
+          },
+          "limit_points": {
+            "type": "integer",
+            "title": "每次限制的查询数据点，默认6000"
+          }
+        },
+        "required": [
+          "dev_id",
+          "start_time",
+          "end_time",
+          "measurement"
+        ]
+      },
+      "告警事件": {
+        "type": "object",
+        "properties": {
+          "alert_id": {
+            "type": "integer"
+          },
+          "data_id": {
+            "type": "integer",
+            "title": "出现警告的数据"
+          },
+          "dev_id": {
+            "type": "integer",
+            "title": "出现警告的设备"
+          },
+          "alert_type": {
+            "type": "string",
+            "title": "dev/data"
+          },
+          "alert_status": {
+            "type": "string",
+            "title": "active/resolved/ignored"
+          },
+          "alert_message": {
+            "type": "string"
+          },
+          "triggered_at": {
+            "type": "string",
+            "title": "告警事件上传时间"
+          },
+          "resolved_at": {
+            "type": "string",
+            "title": "告警事件解决时间"
+          }
+        },
+        "required": [
+          "alert_status",
+          "alert_type"
+        ]
+      },
+      "文件数据": {
+        "type": "object",
+        "properties": {
+          "bucket_name": {
+            "type": "string",
+            "title": "所存bucket名字,建议与dev_type一致，如传感器设备类型为image，则bucket_name为image"
+          },
+          "bucket_key": {
+            "type": "string",
+            "title": "数据库中文件key，默认为dev_id/YYYY/MM/DD/<filename>"
+          },
+          "file_path": {
+            "type": "string",
+            "title": "本地文件路径"
+          }
+        },
+        "required": [
+          "file_path",
+          "bucket_name"
+        ]
+      }
+    },
+    "responses": {
+      "记录不存在": {
+        "description": "",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "integer"
+                },
+                "message": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ]
+            }
+          }
+        }
+      },
+      "参数不正确": {
+        "description": "",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "integer"
+                },
+                "message": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {}
+  },
+  "servers": [],
+  "security": []
+}

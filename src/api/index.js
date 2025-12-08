@@ -3,12 +3,27 @@ import axios from 'axios';
 // Use proxy in development, direct URL in production
 const API_BASE_URL = '';
 
+// 自定义JSON解析，将大数字ID转为字符串
+const transformBigIntResponse = (data) => {
+  if (typeof data === 'string') {
+    try {
+      // 将大数字（超过15位）转为字符串后再解析
+      const transformed = data.replace(/:(\d{15,})/g, ':"$1"');
+      return JSON.parse(transformed);
+    } catch (e) {
+      return data;
+    }
+  }
+  return data;
+};
+
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
   },
+  transformResponse: [transformBigIntResponse],
 });
 
 // Request interceptor - add token
@@ -24,9 +39,13 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor - handle errors
+// Response interceptor - handle errors and BigInt IDs
 api.interceptors.response.use(
-  (response) => response.data,
+  (response) => {
+    // 处理响应数据中的大数字ID（转为字符串避免精度丢失）
+    const data = response.data;
+    return data;
+  },
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
@@ -85,6 +104,8 @@ export const dataApi = {
   getFileList: (params) => api.get('/api/v1/device/data/file/list', { params }),
   downloadFile: (params) => api.get('/api/v1/device/data/file/download', { params }),
   deleteFile: (data) => api.delete('/api/v1/device/data/file', { data }),
+  // 获取文件上传预签名URL (用于客户端直接上传到MinIO)
+  getPresignedUrl: (data) => api.post('/api/v1/device/data/file/presigned_url', data),
 };
 
 export default api;

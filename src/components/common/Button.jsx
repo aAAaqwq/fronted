@@ -7,7 +7,7 @@ const Button = ({
   size = 'md',
   loading = false,
   disabled = false,
-  icon: Icon,
+  icon,
   onClick,
   type = 'button',
   className = '',
@@ -29,6 +29,25 @@ const Button = ({
     lg: 'px-6 py-3 text-base',
   };
 
+  const renderIcon = () => {
+    if (loading) {
+      return <Loader2 size={16} className="animate-spin mr-2" />;
+    }
+
+    if (!icon) return null;
+
+    // 支持传入 React 组件 (icon={Icon}) 或 JSX 元素 (icon={<Icon />})
+    if (React.isValidElement(icon)) {
+      return React.cloneElement(icon, {
+        className: `${icon.props.className || ''} mr-2`.trim(),
+        size: icon.props.size || 16,
+      });
+    }
+
+    const IconComponent = icon;
+    return <IconComponent size={16} className="mr-2" />;
+  };
+
   return (
     <button
       type={type}
@@ -38,11 +57,7 @@ const Button = ({
         disabled || loading ? 'cursor-not-allowed' : ''
       } ${className}`}
     >
-      {loading ? (
-        <Loader2 size={16} className="animate-spin mr-2" />
-      ) : Icon ? (
-        <Icon size={16} className="mr-2" />
-      ) : null}
+      {renderIcon()}
       {children}
     </button>
   );

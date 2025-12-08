@@ -63,10 +63,10 @@ const Logs = () => {
         toast.success('删除成功');
         fetchLogs();
       } else {
-        toast.error(res.message || '删除失败');
+        toast.error(res.message || `删除失败 (code=${res.code})`);
       }
     } catch (error) {
-      toast.error('删除失败');
+      toast.error(error?.message || '删除失败');
     }
   };
 

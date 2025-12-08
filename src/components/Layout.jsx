@@ -13,7 +13,8 @@ import {
   X,
   ChevronDown,
   User,
-  Settings
+  Settings,
+  Upload
 } from 'lucide-react';
 
 const Layout = ({ children }) => {
@@ -29,6 +30,7 @@ const Layout = ({ children }) => {
     { path: '/users', icon: Users, label: '用户管理', adminOnly: true },
     { path: '/warnings', icon: AlertTriangle, label: '告警管理' },
     { path: '/data', icon: Database, label: '数据管理' },
+    { path: '/upload', icon: Upload, label: '数据上传', adminOnly: true },
     { path: '/logs', icon: FileText, label: '日志管理', adminOnly: true },
   ];
 

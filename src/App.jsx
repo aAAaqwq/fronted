@@ -9,6 +9,7 @@ import Devices from './pages/Devices';
 import Users from './pages/Users';
 import Warnings from './pages/Warnings';
 import Data from './pages/Data';
+import DataUpload from './pages/DataUpload';
 import Logs from './pages/Logs';
 import Profile from './pages/Profile';
 
@@ -105,6 +106,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <Data />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/upload"
+        element={
+          <ProtectedRoute adminOnly>
+            <DataUpload />
           </ProtectedRoute>
         }
       />
