@@ -96,156 +96,146 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="space-y-6 animate-fadeIn">
-      {/* Welcome */}
-      <div className="bg-gradient-to-r from-primary-600 to-primary-700 rounded-xl p-6 text-white">
-        <h2 className="text-2xl font-bold mb-2">
-          欢迎回来，{user?.username || user?.email}！
-        </h2>
-        <p className="text-primary-100">
-          {isAdmin() ? '您是管理员，可以管理所有设备和用户。' : '查看您的设备状态和数据统计。'}
-        </p>
-      </div>
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto space-y-6 animate-fadeIn">
+        {/* Page Title */}
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">仪表盘</h1>
+          <p className="text-gray-600 mt-2">查看系统概览、设备状态和告警信息</p>
+        </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
-          title="设备总数"
-          value={stats.total}
-          icon={Cpu}
-          color="bg-primary-500"
-        />
-        <StatCard
-          title="在线设备"
-          value={stats.online}
-          icon={Wifi}
-          color="bg-green-500"
-        />
-        <StatCard
-          title="离线设备"
-          value={stats.offline}
-          icon={WifiOff}
-          color="bg-gray-500"
-        />
-        <StatCard
-          title="异常设备"
-          value={stats.abnormal}
-          icon={AlertTriangle}
-          color="bg-red-500"
-        />
-      </div>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatCard
+            title="设备总数"
+            value={stats.total}
+            icon={Database}
+            color="bg-blue-500"
+            trend={5}
+          />
+          <StatCard
+            title="在线设备"
+            value={stats.online}
+            icon={Wifi}
+            color="bg-green-500"
+            trend={2}
+          />
+          <StatCard
+            title="离线设备"
+            value={stats.offline}
+            icon={WifiOff}
+            color="bg-gray-500"
+            trend={-1}
+          />
+          <StatCard
+            title="异常设备"
+            value={stats.abnormal}
+            icon={AlertTriangle}
+            color="bg-red-500"
+            trend={0}
+          />
+        </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Line Chart */}
-        <Card title="数据上传趋势" className="lg:col-span-2">
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={lineChartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="name" stroke="#9ca3af" fontSize={12} />
-                <YAxis stroke="#9ca3af" fontSize={12} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#fff',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '8px',
-                  }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="value"
-                  stroke="#3b82f6"
-                  strokeWidth={3}
-                  dot={{ fill: '#3b82f6', strokeWidth: 2 }}
-                  activeDot={{ r: 6 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-
-        {/* Pie Chart */}
-        <Card title="设备状态分布">
-          <div className="h-80 flex flex-col items-center justify-center">
-            <ResponsiveContainer width="100%" height="70%">
-              <PieChart>
-                <Pie
-                  data={pieChartData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {pieChartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="flex justify-center space-x-6 mt-4">
-              {pieChartData.map((item) => (
-                <div key={item.name} className="flex items-center">
-                  <div
-                    className="w-3 h-3 rounded-full mr-2"
-                    style={{ backgroundColor: item.color }}
+        {/* Charts & Warnings */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Line Chart */}
+          <div className="lg:col-span-2 bg-white rounded-xl shadow-sm p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+              <Activity size={20} className="mr-2 text-primary-600" />
+              数据流量趋势
+            </h3>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={lineChartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="name" stroke="#9ca3af" fontSize={12} />
+                  <YAxis stroke="#9ca3af" fontSize={12} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#fff',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    }}
                   />
-                  <span className="text-sm text-gray-600">
-                    {item.name}: {item.value}
-                  </span>
-                </div>
-              ))}
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    stroke="#2563eb"
+                    strokeWidth={3}
+                    dot={{ r: 4, strokeWidth: 2 }}
+                    activeDot={{ r: 6, strokeWidth: 0 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
           </div>
-        </Card>
-      </div>
 
-      {/* Recent Warnings */}
-      <Card
-        title="最近告警"
-        extra={
-          <a href="/warnings" className="text-sm text-primary-600 hover:text-primary-700">
-            查看全部
-          </a>
-        }
-      >
-        {warnings.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <AlertTriangle size={48} className="mx-auto mb-4 text-gray-300" />
-            <p>暂无告警信息</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {warnings.map((warning) => (
-              <div
-                key={warning.alert_id}
-                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <div className="flex items-center space-x-4">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                    warning.alert_status === 'active' ? 'bg-red-100' : 'bg-gray-100'
-                  }`}>
-                    <AlertTriangle
-                      size={20}
-                      className={warning.alert_status === 'active' ? 'text-red-600' : 'text-gray-500'}
-                    />
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900">{warning.alert_message || '设备异常'}</p>
-                    <p className="text-sm text-gray-500">
-                      设备ID: {warning.dev_id} · {warning.triggered_at}
-                    </p>
-                  </div>
-                </div>
-                {getStatusBadge(warning.alert_status)}
+          {/* Pie Chart & Warnings */}
+          <div className="space-y-6 flex flex-col">
+            {/* Pie Chart */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-6">设备状态分布</h3>
+              <div className="h-48">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={pieChartData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {pieChartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
-            ))}
+              <div className="flex justify-center space-x-4 mt-4">
+                {pieChartData.map((item, index) => (
+                  <div key={index} className="flex items-center">
+                    <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: item.color }} />
+                    <span className="text-sm text-gray-600">{item.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Recent Warnings */}
+            <div className="bg-white rounded-xl shadow-sm p-6 flex-1">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">最新告警</h3>
+                <span className="text-xs text-primary-600 cursor-pointer hover:underline">查看全部</span>
+              </div>
+              <div className="space-y-4">
+                {warnings.length > 0 ? (
+                  warnings.map((warning, index) => (
+                    <div key={index} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+                      <AlertTriangle size={16} className="text-red-500 mt-0.5 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">{warning.alert_message}</p>
+                        <div className="flex items-center mt-1 text-xs text-gray-500">
+                          <span className="mr-2">{new Date(warning.alert_time || Date.now()).toLocaleTimeString()}</span>
+                          {getStatusBadge(warning.alert_status === 0 ? 'active' : 'resolved')}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <p>暂无告警信息</p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
-        )}
-      </Card>
+        </div>
+      </div>
     </div>
   );
 };

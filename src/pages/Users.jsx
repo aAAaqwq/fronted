@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useToast } from '../components/common/Toast';
 import { userApi } from '../api';
-import { Plus, Search, Edit, Trash2, Shield, User as UserIcon } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Shield, User as UserIcon, Eye, Smartphone } from 'lucide-react';
 import Table from '../components/common/Table';
 import Button from '../components/common/Button';
 import Input from '../components/common/Input';
@@ -19,7 +19,11 @@ const Users = () => {
   // Modal states
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+    const [showDevicesModal, setShowDevicesModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [userDevices, setUserDevices] = useState([]);
+  const [devicesLoading, setDevicesLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -30,7 +34,7 @@ const Users = () => {
     email: '',
     username: '',
   });
-  const [submitting, setSubmitting] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -104,6 +108,39 @@ const Users = () => {
     }
   };
 
+  
+  const fetchUserDetail = async (user) => {
+    try {
+      const res = await userApi.getUser({ uid: user.uid });
+      if (res.code === 200) {
+        setSelectedUser({ ...user, ...res.data });
+        setShowDetailModal(true);
+      } else {
+        toast.error('获取用户详情失败');
+      }
+    } catch (error) {
+      toast.error('获取用户详情失败');
+    }
+  };
+
+  const fetchUserDevices = async (user) => {
+    try {
+      setDevicesLoading(true);
+      setSelectedUser(user);
+      const res = await userApi.getBindDevices({ page: 1, page_size: 100 });
+      if (res.code === 200) {
+        setUserDevices(res.data?.items || []);
+        setShowDevicesModal(true);
+      } else {
+        toast.error('获取用户设备失败');
+      }
+    } catch (error) {
+      toast.error('获取用户设备失败');
+    } finally {
+      setDevicesLoading(false);
+    }
+  };
+
   const handleDelete = async (user) => {
     if (!window.confirm(`确定要删除用户 ${user.username || user.email} 吗？`)) return;
     try {
@@ -129,6 +166,7 @@ const Users = () => {
     setShowEditModal(true);
   };
 
+  
   const getRoleBadge = (role) => {
     if (role === 'admin') {
       return (
@@ -179,21 +217,36 @@ const Users = () => {
     {
       title: '操作',
       key: 'actions',
+      width: '280px',
       render: (_, row) => (
         <div className="flex items-center space-x-2">
           <button
-            onClick={() => openEditModal(row)}
-            className="p-1.5 text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded transition-colors"
-            title="编辑"
+            onClick={() => fetchUserDetail(row)}
+            className="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 transition-colors"
           >
-            <Edit size={16} />
+            <Eye size={12} className="mr-1" />
+            详情
+          </button>
+          <button
+            onClick={() => fetchUserDevices(row)}
+            className="inline-flex items-center px-2 py-1 text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded-md hover:bg-green-100 transition-colors"
+          >
+            <Smartphone size={12} className="mr-1" />
+            设备
+          </button>
+          <button
+            onClick={() => openEditModal(row)}
+            className="inline-flex items-center px-2 py-1 text-xs font-medium text-orange-700 bg-orange-50 border border-orange-200 rounded-md hover:bg-orange-100 transition-colors"
+          >
+            <Edit size={12} className="mr-1" />
+            编辑
           </button>
           <button
             onClick={() => handleDelete(row)}
-            className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-            title="删除"
+            className="inline-flex items-center px-2 py-1 text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 transition-colors"
           >
-            <Trash2 size={16} />
+            <Trash2 size={12} className="mr-1" />
+            删除
           </button>
         </div>
       ),
@@ -201,48 +254,59 @@ const Users = () => {
   ];
 
   return (
-    <div className="space-y-6 animate-fadeIn">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center space-x-4">
-          <div className="relative">
-            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-              placeholder="搜索用户..."
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent w-64"
-            />
-          </div>
-          <Select
-            value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value)}
-            options={[
-              { value: 'admin', label: '管理员' },
-              { value: 'user', label: '普通用户' },
-            ]}
-            placeholder="全部角色"
-            className="w-32"
-          />
-          <Button onClick={handleSearch} variant="secondary">
-            搜索
-          </Button>
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto space-y-6 animate-fadeIn">
+        {/* Page Title */}
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">用户管理</h1>
+          <p className="text-gray-600 mt-2">管理系统用户，查看用户信息和绑定设备</p>
         </div>
-        <Button onClick={() => setShowCreateModal(true)} icon={Plus}>
-          创建用户
-        </Button>
-      </div>
+
+        {/* Header */}
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  value={keyword}
+                  onChange={(e) => setKeyword(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                  placeholder="搜索用户..."
+                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent w-64"
+                />
+              </div>
+              <Select
+                value={roleFilter}
+                onChange={(e) => setRoleFilter(e.target.value)}
+                options={[
+                  { value: 'admin', label: '管理员' },
+                  { value: 'user', label: '普通用户' },
+                ]}
+                placeholder="全部角色"
+                className="w-32"
+              />
+              <Button onClick={handleSearch} variant="secondary">
+                搜索
+              </Button>
+            </div>
+            <Button onClick={() => setShowCreateModal(true)} icon={Plus}>
+              创建用户
+            </Button>
+          </div>
+        </div>
 
       {/* Table */}
-      <Table
-        columns={columns}
-        data={users}
-        loading={loading}
-        pagination={pagination}
-        onPageChange={(page) => setPagination(prev => ({ ...prev, page }))}
-      />
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+        <Table
+          columns={columns}
+          data={users}
+          loading={loading}
+          pagination={pagination}
+          onPageChange={(page) => setPagination(prev => ({ ...prev, page }))}
+        />
+      </div>
 
       {/* Create Modal */}
       <Modal
@@ -314,6 +378,101 @@ const Users = () => {
           </div>
         </div>
       </Modal>
+
+      {/* User Detail Modal */}
+      <Modal
+        isOpen={showDetailModal}
+        onClose={() => setShowDetailModal(false)}
+        title="用户详情"
+      >
+        {selectedUser && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">用户ID</label>
+                <p className="text-sm text-gray-900 font-mono">{selectedUser.uid}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">角色</label>
+                <div>{getRoleBadge(selectedUser.role)}</div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">邮箱</label>
+                <p className="text-sm text-gray-900">{selectedUser.email || '-'}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">用户名</label>
+                <p className="text-sm text-gray-900">{selectedUser.username || '-'}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">创建时间</label>
+                <p className="text-sm text-gray-900">{selectedUser.create_at || '-'}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">更新时间</label>
+                <p className="text-sm text-gray-900">{selectedUser.update_at || '-'}</p>
+              </div>
+            </div>
+            <div className="flex justify-end pt-4 border-t">
+              <Button variant="secondary" onClick={() => setShowDetailModal(false)}>
+                关闭
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+
+      {/* User Devices Modal */}
+      <Modal
+        isOpen={showDevicesModal}
+        onClose={() => setShowDevicesModal(false)}
+        title={`${selectedUser?.username || selectedUser?.email || '用户'} 的绑定设备`}
+      >
+        <div className="space-y-4">
+          {devicesLoading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
+              <p className="text-gray-500 mt-2">加载中...</p>
+            </div>
+          ) : userDevices.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <Smartphone size={32} className="mx-auto mb-2 opacity-50" />
+              <p>该用户暂未绑定任何设备</p>
+            </div>
+          ) : (
+            <div className="space-y-3 max-h-96 overflow-y-auto">
+              {userDevices.map(device => (
+                <div key={device.dev_id} className="p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-gray-900">{device.dev_name || `设备 ${device.dev_id}`}</p>
+                      <p className="text-sm text-gray-500">ID: {device.dev_id}</p>
+                      <p className="text-sm text-gray-500">类型: {device.dev_type || '-'}</p>
+                    </div>
+                    <div className="text-right">
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                        device.dev_status === 1 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
+                      }`}>
+                        {device.dev_status === 1 ? '在线' : '离线'}
+                      </span>
+                      {device.permission_level && (
+                        <p className="text-xs text-gray-500 mt-1">权限: {device.permission_level}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="flex justify-end pt-4 border-t">
+            <Button variant="secondary" onClick={() => setShowDevicesModal(false)}>
+              关闭
+            </Button>
+          </div>
+        </div>
+      </Modal>
+      </div>
     </div>
   );
 };

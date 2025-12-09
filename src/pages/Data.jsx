@@ -19,9 +19,14 @@ const Data = () => {
   
   // Timeseries data
   const [timeseriesData, setTimeseriesData] = useState([]);
-  const [measurement, setMeasurement] = useState('ecg');
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
+  const [measurement, setMeasurement] = useState('ecg'); // 默认心电数据
+  const [startTime, setStartTime] = useState(() => {
+    // 默认开始时间：7天前
+    const date = new Date();
+    date.setDate(date.getDate() - 7);
+    return date.toISOString().slice(0, 16); // 格式化为 datetime-local 格式
+  });
+  const [endTime, setEndTime] = useState(''); // 默认结束时间为空（至今）
   
   // File data
   const [files, setFiles] = useState([]);
@@ -56,19 +61,21 @@ const Data = () => {
     }
     try {
       setLoading(true);
-      const now = Date.now();
+      // API使用秒级时间戳
+      const nowSec = Math.floor(Date.now() / 1000);
       const res = await dataApi.queryTimeseries({
-        dev_id: parseInt(selectedDevice),
-        start_time: startTime ? new Date(startTime).getTime() : now - 24 * 60 * 60 * 1000,
-        end_time: endTime ? new Date(endTime).getTime() : now,
+        dev_id: selectedDevice,
+        start_time: startTime ? Math.floor(new Date(startTime).getTime() / 1000) : nowSec - 7 * 24 * 60 * 60, // 默认7天
+        end_time: endTime ? Math.floor(new Date(endTime).getTime() / 1000) : nowSec,
         measurement: measurement,
         limit_points: 100,
       });
       if (res.code === 200) {
         const points = res.data.points || [];
         const chartData = points.map((p, index) => ({
-          time: new Date(p.timestamp).toLocaleTimeString(),
-          value: p.fileds?.value || p.fileds?.ch1 || 0,
+          // 后端返回秒级时间戳，需要转换为毫秒
+          time: new Date(p.timestamp * 1000).toLocaleTimeString(),
+          value: p.fields?.value || p.fields?.ch1 || 0,
         }));
         setTimeseriesData(chartData);
         toast.success(`获取到 ${points.length} 条数据`);
@@ -90,7 +97,7 @@ const Data = () => {
     try {
       setLoading(true);
       const res = await dataApi.getFileList({
-        dev_id: parseInt(selectedDevice),
+        dev_id: selectedDevice,
         bucket_name: bucketName,
         page: filePagination.page,
         page_size: filePagination.page_size,
@@ -110,7 +117,7 @@ const Data = () => {
     if (!selectedDevice) return;
     try {
       const res = await dataApi.getStatistic({
-        dev_id: parseInt(selectedDevice),
+        dev_id: selectedDevice,
         measurement: measurement,
       });
       if (res.code === 200) {
@@ -147,6 +154,29 @@ const Data = () => {
       if (res.code === 200) {
         toast.success('删除成功');
         fetchFileData();
+      } else {
+        toast.error(res.message || '删除失败');
+      }
+    } catch (error) {
+      toast.error('删除失败');
+    }
+  };
+
+  const handleDeleteTimeseries = async () => {
+    if (!selectedDevice) {
+      toast.warning('请选择设备');
+      return;
+    }
+    if (!window.confirm('确定要删除该设备的时序数据吗？这将删除指定时间范围内的所有数据！')) return;
+    try {
+      const res = await dataApi.deleteTimeseries({
+        dev_id: selectedDevice,
+        start_time: new Date(startTime).toISOString(),
+        end_time: new Date(endTime).toISOString(),
+      });
+      if (res.code === 200) {
+        toast.success('时序数据删除成功');
+        fetchTimeseriesData();
       } else {
         toast.error(res.message || '删除失败');
       }
@@ -206,21 +236,22 @@ const Data = () => {
     {
       title: '操作',
       key: 'actions',
+      width: '160px',
       render: (_, row) => (
         <div className="flex items-center space-x-2">
           <button
             onClick={() => handleDownload(row)}
-            className="p-1.5 text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded transition-colors"
-            title="下载"
+            className="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 transition-colors"
           >
-            <Download size={16} />
+            <Download size={12} className="mr-1" />
+            下载
           </button>
           <button
             onClick={() => handleDeleteFile(row)}
-            className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-            title="删除"
+            className="inline-flex items-center px-2 py-1 text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 transition-colors"
           >
-            <Trash2 size={16} />
+            <Trash2 size={12} className="mr-1" />
+            删除
           </button>
         </div>
       ),
@@ -242,79 +273,91 @@ const Data = () => {
   ];
 
   return (
-    <div className="space-y-6 animate-fadeIn">
-      {/* Device Selector */}
-      <Card>
-        <div className="flex items-center space-x-4">
-          <Select
-            label="选择设备"
-            value={selectedDevice}
-            onChange={(e) => setSelectedDevice(e.target.value)}
-            options={devices.map(d => ({
-              value: d.dev_id.toString(),
-              label: d.dev_name || `设备 ${d.dev_id}`,
-            }))}
-            placeholder="请选择设备"
-            className="w-64"
-          />
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto space-y-6 animate-fadeIn">
+        {/* Page Title */}
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">数据管理</h1>
+          <p className="text-gray-600 mt-2">管理和分析传感器数据，支持时序数据和文件数据</p>
         </div>
-      </Card>
 
-      {/* Tabs */}
-      <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit">
-        <button
-          onClick={() => setActiveTab('timeseries')}
-          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-            activeTab === 'timeseries'
-              ? 'bg-white text-primary-600 shadow-sm'
-              : 'text-gray-600 hover:text-gray-900'
-          }`}
-        >
-          时序数据
-        </button>
-        <button
-          onClick={() => setActiveTab('files')}
-          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-            activeTab === 'files'
-              ? 'bg-white text-primary-600 shadow-sm'
-              : 'text-gray-600 hover:text-gray-900'
-          }`}
-        >
-          文件数据
-        </button>
-      </div>
+        {/* Device Selector */}
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="flex items-center space-x-4">
+            <Select
+              label="选择设备"
+              value={selectedDevice}
+              onChange={(e) => setSelectedDevice(e.target.value)}
+              options={devices.map(d => ({
+                value: d.dev_id.toString(),
+                label: d.dev_name || `设备 ${d.dev_id}`,
+              }))}
+              placeholder="请选择设备"
+              className="w-64"
+            />
+          </div>
+        </div>
 
-      {/* Timeseries Tab */}
-      {activeTab === 'timeseries' && (
-        <div className="space-y-6">
-          {/* Query Form */}
-          <Card title="查询条件">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Select
-                label="数据类型"
-                value={measurement}
-                onChange={(e) => setMeasurement(e.target.value)}
-                options={measurementOptions}
-              />
-              <Input
-                label="开始时间"
-                type="datetime-local"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-              />
-              <Input
-                label="结束时间"
-                type="datetime-local"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-              />
-              <div className="flex items-end">
-                <Button onClick={fetchTimeseriesData} loading={loading} icon={Search}>
-                  查询
-                </Button>
+        {/* Tabs */}
+        <div className="flex space-x-1 bg-gray-200 p-1 rounded-xl w-fit">
+          <button
+            onClick={() => setActiveTab('timeseries')}
+            className={`px-6 py-2.5 rounded-lg text-sm font-medium transition-all ${
+              activeTab === 'timeseries'
+                ? 'bg-white text-primary-600 shadow-sm ring-1 ring-black/5'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+            }`}
+          >
+            时序数据
+          </button>
+          <button
+            onClick={() => setActiveTab('files')}
+            className={`px-6 py-2.5 rounded-lg text-sm font-medium transition-all ${
+              activeTab === 'files'
+                ? 'bg-white text-primary-600 shadow-sm ring-1 ring-black/5'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+            }`}
+          >
+            文件数据
+          </button>
+        </div>
+
+        {/* Timeseries Tab */}
+        {activeTab === 'timeseries' && (
+          <div className="space-y-6">
+            {/* Query Form */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">查询条件</h3>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Select
+                  label="数据类型"
+                  value={measurement}
+                  onChange={(e) => setMeasurement(e.target.value)}
+                  options={measurementOptions}
+                />
+                <Input
+                  label="开始时间"
+                  type="datetime-local"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                />
+                <Input
+                  label="结束时间"
+                  type="datetime-local"
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                  placeholder="留空表示至今"
+                />
+                <div className="flex items-end space-x-2">
+                  <Button onClick={fetchTimeseriesData} loading={loading} icon={Search}>
+                    查询
+                  </Button>
+                  <Button onClick={handleDeleteTimeseries} variant="outline" icon={Trash2}>
+                    删除数据
+                  </Button>
+                </div>
               </div>
             </div>
-          </Card>
 
           {/* Statistics */}
           <div className="grid grid-cols-2 gap-4">
@@ -385,18 +428,21 @@ const Data = () => {
           </Card>
 
           {/* File Table */}
-          <Table
-            columns={fileColumns}
-            data={files}
-            loading={loading}
-            pagination={filePagination}
-            onPageChange={(page) => {
-              setFilePagination(prev => ({ ...prev, page }));
-              fetchFileData();
-            }}
-          />
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+            <Table
+              columns={fileColumns}
+              data={files}
+              loading={loading}
+              pagination={filePagination}
+              onPageChange={(page) => {
+                setFilePagination(prev => ({ ...prev, page }));
+                fetchFileData();
+              }}
+            />
+          </div>
         </div>
       )}
+      </div>
     </div>
   );
 };

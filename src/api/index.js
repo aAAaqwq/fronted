@@ -17,6 +17,16 @@ const transformBigIntResponse = (data) => {
   return data;
 };
 
+// 自定义JSON序列化，将字符串ID转为数字（用于请求体）
+const transformBigIntRequest = (data) => {
+  if (!data) return data;
+  // 将对象转为JSON字符串，然后将引号包裹的大数字ID转为数字
+  const jsonStr = JSON.stringify(data);
+  // 匹配 "dev_id":"123..." 或 "uid":"123..." 等ID字段，将字符串值转为数字
+  const transformed = jsonStr.replace(/"(dev_id|uid|alert_id|log_id|data_id)":"(\d+)"/g, '"$1":$2');
+  return transformed;
+};
+
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
@@ -26,13 +36,19 @@ const api = axios.create({
   transformResponse: [transformBigIntResponse],
 });
 
-// Request interceptor - add token
+// Request interceptor - add token and transform BigInt IDs
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
       // Add Bearer prefix if not present
       config.headers.Authorization = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+    }
+    // 转换请求体中的字符串ID为数字
+    if (config.data && typeof config.data === 'object') {
+      config.data = transformBigIntRequest(config.data);
+      // 由于已经是JSON字符串，需要告诉axios不要再次序列化
+      config.transformRequest = [(data) => data];
     }
     return config;
   },
@@ -104,8 +120,18 @@ export const dataApi = {
   getFileList: (params) => api.get('/api/v1/device/data/file/list', { params }),
   downloadFile: (params) => api.get('/api/v1/device/data/file/download', { params }),
   deleteFile: (data) => api.delete('/api/v1/device/data/file', { data }),
-  // 获取文件上传预签名URL (用于客户端直接上传到MinIO)
-  getPresignedUrl: (data) => api.post('/api/v1/device/data/file/presigned_url', data),
+  // 获取文件上传预签名URL (用于客户端直接上传到MinIO) - 不转换ID
+  getPresignedUrl: (data) => {
+    const token = localStorage.getItem('token');
+    return axios.post('/api/v1/device/data/file/presigned_url', data, {
+      baseURL: API_BASE_URL,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': token?.startsWith('Bearer ') ? token : `Bearer ${token}`
+      },
+      transformResponse: [transformBigIntResponse]
+    }).then(response => response.data);
+  },
 };
 
 export default api;

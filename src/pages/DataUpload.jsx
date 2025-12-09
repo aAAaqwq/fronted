@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useToast } from '../components/common/Toast';
-import { dataApi, deviceApi } from '../api';
-import { Upload, FileText, Activity, Thermometer, Heart, Zap, Send, X, CheckCircle, BarChart3, TrendingUp, Download, Eye, RefreshCw } from 'lucide-react';
+import { dataApi, deviceApi, logApi } from '../api';
+import { Upload, FileText, Activity, Thermometer, Heart, Zap, Send, X, CheckCircle, BarChart3, TrendingUp, Download, Eye, RefreshCw, LineChart } from 'lucide-react';
 import Button from '../components/common/Button';
 import Select from '../components/common/Select';
 import Input from '../components/common/Input';
@@ -13,7 +13,7 @@ const DataUpload = () => {
   const [loading, setLoading] = useState(false);
   const [uploadType, setUploadType] = useState('timeseries'); // timeseries, file, or visualize
   const [selectedDevice, setSelectedDevice] = useState('');
-  const [measurementType, setMeasurementType] = useState('emg');
+  const [measurementType, setMeasurementType] = useState('ecg'); // 默认心电数据
   
   // CSV文件上传
   const [csvFile, setCsvFile] = useState(null);
@@ -29,11 +29,79 @@ const DataUpload = () => {
   const [queryLoading, setQueryLoading] = useState(false);
   const [dataStats, setDataStats] = useState(null);
   
-  // 上传历史
+  // 上传历史 - 从后端日志API加载
   const [uploadHistory, setUploadHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
+  // 从后端获取上传历史
+  const fetchUploadHistory = async () => {
+    try {
+      setHistoryLoading(true);
+      const res = await logApi.getList({ type: 'info' });
+      if (res.code === 200 && res.data?.logs) {
+        const logs = res.data.logs
+          .filter(log => log.message && log.message.startsWith('[数据上传]'))
+          .map(log => {
+            try {
+              // 从message中提取JSON部分
+              const jsonMatch = log.message.match(/\{.*\}/);
+              if (jsonMatch) {
+                const data = JSON.parse(jsonMatch[0]);
+                return {
+                  id: log.log_id,
+                  type: data.upload_type || 'timeseries',
+                  device: data.device,
+                  measurement: data.measurement,
+                  points: data.points,
+                  filename: data.filename,
+                  size: data.size,
+                  time: log.create_at
+                };
+              }
+              return null;
+            } catch {
+              return null;
+            }
+          })
+          .filter(Boolean);
+        setUploadHistory(logs);
+      }
+    } catch (error) {
+      console.error('Failed to fetch upload history:', error);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  // 保存上传记录到后端
+  const saveUploadLog = async (logData) => {
+    try {
+      const message = `[数据上传] ${JSON.stringify({
+        upload_type: logData.type,
+        device: logData.device,
+        dev_id: logData.dev_id,
+        measurement: logData.measurement,
+        points: logData.points,
+        filename: logData.filename,
+        size: logData.size
+      })}`;
+      
+      await logApi.create({
+        type: 'info',
+        level: 1,
+        message: message,
+        user_agent: navigator.userAgent || 'Web Client'
+      });
+      // 刷新历史记录
+      fetchUploadHistory();
+    } catch (error) {
+      console.error('Failed to save upload log:', error);
+    }
+  };
 
   useEffect(() => {
     fetchDevices();
+    fetchUploadHistory();
   }, []);
 
   // 当设备或测量类型改变时，如果在可视化模式，自动查询数据
@@ -133,9 +201,25 @@ const DataUpload = () => {
         }
 
         // 构建批量上传的数据点
+        const baseTimestamp = Math.floor(Date.now() / 1000); // 当前时间戳（秒）
         const points = data.map((row, index) => {
-          // 支持多种CSV格式
-          const timestamp = row.timestamp || row.time || row.t || (Math.floor(Date.now() / 1000) + index);
+          // 支持多种CSV格式的时间戳
+          let timestamp;
+          if (row.timestamp || row.time || row.t) {
+            const timeValue = row.timestamp || row.time || row.t;
+            // 如果是字符串，尝试解析为日期
+            if (typeof timeValue === 'string') {
+              timestamp = Math.floor(new Date(timeValue).getTime() / 1000);
+            } else {
+              // 如果是数字，检查是否为毫秒时间戳
+              const numTime = parseFloat(timeValue);
+              timestamp = numTime > 1e10 ? Math.floor(numTime / 1000) : numTime;
+            }
+          } else {
+            // 如果没有时间戳，使用当前时间减去索引（从最新到最旧）
+            timestamp = baseTimestamp - (data.length - index - 1) * 10; // 每10秒一个数据点
+          }
+          
           const value = row.value || row.v || row.data || row[Object.keys(row).find(k => !['timestamp', 'time', 't', 'quality', 'quality_score'].includes(k))];
           const quality = row.quality || row.quality_score || '95';
           
@@ -156,12 +240,12 @@ const DataUpload = () => {
           }
 
           return {
-            timestamp: parseInt(timestamp),
+            timestamp: Math.floor(timestamp), // 确保是整数秒时间戳
             measurement: measurementType,
             tags: { quality_score: quality.toString() },
-            fileds: fields
+            fields: fields
           };
-        }).filter(p => p.timestamp && Object.keys(p.fileds).length > 0);
+        }).filter(p => p.timestamp && Object.keys(p.fields).length > 0 && !isNaN(p.timestamp));
 
         if (points.length === 0) {
           toast.error('没有有效的数据点，请检查CSV格式');
@@ -180,7 +264,7 @@ const DataUpload = () => {
           const payload = {
             series_data: { points: batch },
             metadata: {
-              dev_id: parseInt(selectedDevice),
+              dev_id: selectedDevice,
               data_type: 'time_series',
               quality_score: avgQuality.toFixed(1)
             }
@@ -197,15 +281,17 @@ const DataUpload = () => {
         }
 
         if (successCount > 0) {
-          toast.success(`成功上传 ${successCount} 条时序数据`);
-          setUploadHistory(prev => [{
-            id: Date.now(),
+          const timeRange = points.length > 0 ? 
+            `时间范围: ${new Date(Math.min(...points.map(p => p.timestamp)) * 1000).toLocaleString()} ~ ${new Date(Math.max(...points.map(p => p.timestamp)) * 1000).toLocaleString()}` : '';
+          toast.success(`成功上传 ${successCount} 条时序数据。${timeRange}`);
+          // 保存上传记录到后端
+          saveUploadLog({
             type: 'timeseries',
             device: devices.find(d => d.dev_id.toString() === selectedDevice)?.dev_name,
+            dev_id: selectedDevice,
             measurement: measurementType,
-            points: successCount,
-            time: new Date().toLocaleString()
-          }, ...prev.slice(0, 9)]);
+            points: successCount
+          });
           setCsvFile(null);
           setCsvPreview([]);
           if (csvInputRef.current) csvInputRef.current.value = '';
@@ -232,7 +318,7 @@ const DataUpload = () => {
       const startTime = endTime - 86400 * 7; // 7天
       
       const res = await dataApi.queryTimeseries({
-        dev_id: parseInt(selectedDevice),
+        dev_id: selectedDevice,
         start_time: startTime,
         end_time: endTime,
         measurement: measurementType,
@@ -372,7 +458,7 @@ const DataUpload = () => {
           bucket_name: bucketName
         },
         metadata: {
-          dev_id: parseInt(selectedDevice),
+          dev_id: selectedDevice,
           data_type: 'file_data',
           quality_score: '100'
         }
@@ -381,14 +467,14 @@ const DataUpload = () => {
       const confirmRes = await dataApi.upload(confirmPayload);
       if (confirmRes.code === 200 || confirmRes.code === 201) {
         toast.success('文件上传成功');
-        setUploadHistory(prev => [{
-          id: Date.now(),
+        // 保存上传记录到后端
+        saveUploadLog({
           type: 'file',
           device: devices.find(d => d.dev_id.toString() === selectedDevice)?.dev_name,
+          dev_id: selectedDevice,
           filename: selectedFile.name,
-          size: (selectedFile.size / 1024).toFixed(2) + ' KB',
-          time: new Date().toLocaleString()
-        }, ...prev.slice(0, 9)]);
+          size: (selectedFile.size / 1024).toFixed(2) + ' KB'
+        });
         setSelectedFile(null);
         setFilePreview(null);
       } else {
@@ -416,7 +502,7 @@ const DataUpload = () => {
 
     // 获取数据的值
     const values = data.map(p => {
-      const fields = p.fileds || p.fields || {};
+      const fields = p.fields || p.fields || {};
       return fields.value || fields.ch1 || Object.values(fields)[0] || 0;
     });
     const timestamps = data.map(p => p.timestamp);
@@ -499,73 +585,91 @@ const DataUpload = () => {
   };
 
   return (
-    <div className="space-y-6 animate-fadeIn">
-      {/* 功能选择 */}
-      <div className="flex space-x-4">
-        <button
-          onClick={() => setUploadType('timeseries')}
-          className={`flex-1 p-4 rounded-xl border-2 transition-all ${
-            uploadType === 'timeseries'
-              ? 'border-primary-500 bg-primary-50'
-              : 'border-gray-200 hover:border-gray-300'
-          }`}
-        >
-          <Activity className={`mx-auto mb-2 ${uploadType === 'timeseries' ? 'text-primary-600' : 'text-gray-400'}`} size={32} />
-          <p className={`font-medium ${uploadType === 'timeseries' ? 'text-primary-700' : 'text-gray-600'}`}>
-            批量上传时序数据
-          </p>
-          <p className="text-sm text-gray-500 mt-1">通过CSV文件批量导入</p>
-        </button>
-        <button
-          onClick={() => setUploadType('file')}
-          className={`flex-1 p-4 rounded-xl border-2 transition-all ${
-            uploadType === 'file'
-              ? 'border-primary-500 bg-primary-50'
-              : 'border-gray-200 hover:border-gray-300'
-          }`}
-        >
-          <FileText className={`mx-auto mb-2 ${uploadType === 'file' ? 'text-primary-600' : 'text-gray-400'}`} size={32} />
-          <p className={`font-medium ${uploadType === 'file' ? 'text-primary-700' : 'text-gray-600'}`}>
-            文件数据上传
-          </p>
-          <p className="text-sm text-gray-500 mt-1">上传图片、视频、音频等</p>
-        </button>
-        <button
-          onClick={() => setUploadType('visualize')}
-          className={`flex-1 p-4 rounded-xl border-2 transition-all ${
-            uploadType === 'visualize'
-              ? 'border-primary-500 bg-primary-50'
-              : 'border-gray-200 hover:border-gray-300'
-          }`}
-        >
-          <BarChart3 className={`mx-auto mb-2 ${uploadType === 'visualize' ? 'text-primary-600' : 'text-gray-400'}`} size={32} />
-          <p className={`font-medium ${uploadType === 'visualize' ? 'text-primary-700' : 'text-gray-600'}`}>
-            数据可视化
-          </p>
-          <p className="text-sm text-gray-500 mt-1">查看已上传的时序数据</p>
-        </button>
-      </div>
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* 页面标题 */}
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">数据上传</h1>
+          <p className="text-gray-600 mt-2">上传时序数据、文件或查看数据可视化</p>
+        </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* 主要区域 */}
-        <div className="lg:col-span-2">
-          <Card title={
-            uploadType === 'timeseries' ? '批量上传时序数据 (CSV)' : 
-            uploadType === 'file' ? '文件上传' : '时序数据可视化'
-          }>
-            {/* 设备选择 */}
-            <div className="mb-6">
-              <Select
-                label="选择设备"
-                value={selectedDevice}
-                onChange={(e) => setSelectedDevice(e.target.value)}
-                options={devices.map(d => ({ value: d.dev_id.toString(), label: `${d.dev_name} (${d.dev_type})` }))}
-                placeholder="请选择设备"
-              />
-            </div>
+        {/* 上传类型选择 */}
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">选择上传类型</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <button
+              onClick={() => setUploadType('timeseries')}
+              className={`p-6 rounded-xl border-2 transition-all text-center group ${
+                uploadType === 'timeseries'
+                  ? 'border-primary-500 bg-primary-50'
+                  : 'border-gray-200 hover:border-primary-200 hover:bg-gray-50'
+              }`}
+            >
+              <div className={`w-12 h-12 mx-auto mb-3 rounded-lg flex items-center justify-center transition-colors ${
+                uploadType === 'timeseries' ? 'bg-primary-100 text-primary-600' : 'bg-gray-100 text-gray-500 group-hover:bg-primary-50 group-hover:text-primary-500'
+              }`}>
+                <Activity size={24} />
+              </div>
+              <h4 className={`font-medium mb-1 ${uploadType === 'timeseries' ? 'text-primary-900' : 'text-gray-900'}`}>时序数据</h4>
+              <p className="text-sm text-gray-500">上传 CSV 格式的传感器时序数据</p>
+            </button>
 
-            {uploadType === 'timeseries' ? (
-              <>
+            <button
+              onClick={() => setUploadType('file')}
+              className={`p-6 rounded-xl border-2 transition-all text-center group ${
+                uploadType === 'file'
+                  ? 'border-primary-500 bg-primary-50'
+                  : 'border-gray-200 hover:border-primary-200 hover:bg-gray-50'
+              }`}
+            >
+              <div className={`w-12 h-12 mx-auto mb-3 rounded-lg flex items-center justify-center transition-colors ${
+                uploadType === 'file' ? 'bg-primary-100 text-primary-600' : 'bg-gray-100 text-gray-500 group-hover:bg-primary-50 group-hover:text-primary-500'
+              }`}>
+                <Upload size={24} />
+              </div>
+              <h4 className={`font-medium mb-1 ${uploadType === 'file' ? 'text-primary-900' : 'text-gray-900'}`}>文件上传</h4>
+              <p className="text-sm text-gray-500">上传图片、视频或音频等文件</p>
+            </button>
+
+            <button
+              onClick={() => setUploadType('visualize')}
+              className={`p-6 rounded-xl border-2 transition-all text-center group ${
+                uploadType === 'visualize'
+                  ? 'border-primary-500 bg-primary-50'
+                  : 'border-gray-200 hover:border-primary-200 hover:bg-gray-50'
+              }`}
+            >
+              <div className={`w-12 h-12 mx-auto mb-3 rounded-lg flex items-center justify-center transition-colors ${
+                uploadType === 'visualize' ? 'bg-primary-100 text-primary-600' : 'bg-gray-100 text-gray-500 group-hover:bg-primary-50 group-hover:text-primary-500'
+              }`}>
+                <LineChart size={24} />
+              </div>
+              <h4 className={`font-medium mb-1 ${uploadType === 'visualize' ? 'text-primary-900' : 'text-gray-900'}`}>数据可视化</h4>
+              <p className="text-sm text-gray-500">预览和分析已上传的数据</p>
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* 主要区域 */}
+          <div className="lg:col-span-2">
+            <Card title={
+              uploadType === 'timeseries' ? '批量上传时序数据 (CSV)' : 
+              uploadType === 'file' ? '文件上传' : '时序数据可视化'
+            }>
+              {/* 设备选择 */}
+              <div className="mb-6">
+                <Select
+                  label="选择设备"
+                  value={selectedDevice}
+                  onChange={(e) => setSelectedDevice(e.target.value)}
+                  options={devices.map(d => ({ value: d.dev_id.toString(), label: `${d.dev_name} (${d.dev_type})` }))}
+                  placeholder="请选择设备"
+                />
+              </div>
+
+              {uploadType === 'timeseries' ? (
+                <>
                 {/* 测量类型选择 */}
                 <div className="mb-6">
                   <label className="block text-sm font-medium text-gray-700 mb-2">测量类型</label>
@@ -747,7 +851,7 @@ const DataUpload = () => {
                         </thead>
                         <tbody>
                           {timeseriesData.slice(0, 50).map((point, i) => {
-                            const fields = point.fileds || point.fields || {};
+                            const fields = point.fields || point.fields || {};
                             const value = fields.value || fields.ch1 || Object.values(fields)[0] || '-';
                             return (
                               <tr key={i} className="border-t hover:bg-gray-50">
@@ -832,14 +936,31 @@ const DataUpload = () => {
 
         {/* 上传历史 */}
         <div>
-          <Card title="上传历史">
-            {uploadHistory.length === 0 ? (
+          <Card title={
+            <div className="flex items-center justify-between w-full">
+              <span>上传历史</span>
+              <button 
+                onClick={fetchUploadHistory}
+                className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
+                disabled={historyLoading}
+              >
+                <RefreshCw size={14} className={`mr-1 ${historyLoading ? 'animate-spin' : ''}`} />
+                刷新
+              </button>
+            </div>
+          }>
+            {historyLoading ? (
+              <div className="text-center py-8 text-gray-500">
+                <RefreshCw size={32} className="mx-auto mb-2 animate-spin" />
+                <p>加载中...</p>
+              </div>
+            ) : uploadHistory.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 <Upload size={32} className="mx-auto mb-2 opacity-50" />
                 <p>暂无上传记录</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-3 max-h-96 overflow-y-auto">
                 {uploadHistory.map(record => (
                   <div key={record.id} className="p-3 bg-gray-50 rounded-lg">
                     <div className="flex items-center justify-between mb-1">
@@ -850,19 +971,22 @@ const DataUpload = () => {
                       </span>
                       <CheckCircle size={14} className="text-green-500" />
                     </div>
-                    <p className="text-sm font-medium text-gray-800">{record.device}</p>
+                    <p className="text-sm font-medium text-gray-800">{record.device || '未知设备'}</p>
                     <p className="text-xs text-gray-500">
                       {record.type === 'timeseries' 
-                        ? `${record.measurement} - ${record.points}个数据点`
-                        : `${record.filename} (${record.size})`
+                        ? `${record.measurement || '-'} - ${record.points || 0}个数据点`
+                        : `${record.filename || '-'} (${record.size || '-'})`
                       }
                     </p>
-                    <p className="text-xs text-gray-400 mt-1">{record.time}</p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {record.time ? new Date(record.time).toLocaleString() : '-'}
+                    </p>
                   </div>
                 ))}
               </div>
             )}
-          </Card>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
