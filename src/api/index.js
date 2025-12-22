@@ -89,6 +89,12 @@ export const deviceApi = {
   create: (data) => api.post('/api/v1/devices', data),
   getList: (params) => api.get('/api/v1/devices', { params }),
   update: (data) => api.put('/api/v1/devices', data),
+  updateStatus: (data) => {
+    console.log('[API] 发送状态更新请求:', data);
+    // 由于 /api/v1/devices/status 端点不存在，使用通用的设备更新接口
+    console.log('[API] 使用通用设备更新接口 /api/v1/devices');
+    return api.put('/api/v1/devices', data);
+  },
   delete: (dev_id) => api.delete('/api/v1/devices', { params: { dev_id } }),
   bindUser: (data) => api.post('/api/v1/devices/bind_user', data),
   unbindUser: (data) => api.delete('/api/v1/devices/unbind_user', { data }),

@@ -220,23 +220,29 @@ const DataUpload = () => {
             timestamp = baseTimestamp - (data.length - index - 1) * 10; // 每10秒一个数据点
           }
           
-          const value = row.value || row.v || row.data || row[Object.keys(row).find(k => !['timestamp', 'time', 't', 'quality', 'quality_score'].includes(k))];
           const quality = row.quality || row.quality_score || '95';
           
-          // 支持多通道数据
+          // 支持多通道数据 (ch1-ch5) 和其他字段
           const fields = {};
           Object.keys(row).forEach(key => {
-            if (!['timestamp', 'time', 't', 'quality', 'quality_score'].includes(key)) {
+            const lowerKey = key.toLowerCase();
+            if (!['timestamp', 'time', 't', 'quality', 'quality_score'].includes(lowerKey)) {
               const numVal = parseFloat(row[key]);
-              if (!isNaN(numVal)) {
+              if (!isNaN(numVal) && isFinite(numVal)) {
                 fields[key] = numVal;
               }
             }
           });
           
-          // 如果没有解析到字段，使用value
-          if (Object.keys(fields).length === 0 && value) {
-            fields.value = parseFloat(value);
+          // 如果没有解析到字段，尝试使用 value 字段
+          if (Object.keys(fields).length === 0) {
+            const value = row.value || row.v || row.data;
+            if (value !== undefined && value !== null && value !== '') {
+              const numVal = parseFloat(value);
+              if (!isNaN(numVal) && isFinite(numVal)) {
+                fields.value = numVal;
+              }
+            }
           }
 
           return {
@@ -500,15 +506,22 @@ const DataUpload = () => {
       );
     }
 
-    // 获取数据的值
-    const values = data.map(p => {
-      const fields = p.fields || p.fields || {};
-      return fields.value || fields.ch1 || Object.values(fields)[0] || 0;
+    // 获取所有通道的数据
+    const channels = {};
+    data.forEach(p => {
+      const fields = p.fields || {};
+      Object.keys(fields).forEach(key => {
+        if (!channels[key]) channels[key] = [];
+        channels[key].push(fields[key]);
+      });
     });
+    
     const timestamps = data.map(p => p.timestamp);
     
-    const minVal = Math.min(...values);
-    const maxVal = Math.max(...values);
+    // 计算所有通道的最小最大值
+    const allValues = Object.values(channels).flat();
+    const minVal = Math.min(...allValues);
+    const maxVal = Math.max(...allValues);
     const range = maxVal - minVal || 1;
     
     // 生成SVG路径
@@ -518,11 +531,8 @@ const DataUpload = () => {
     const chartWidth = width - padding * 2;
     const chartHeight = height - padding * 2;
     
-    const points = values.map((v, i) => {
-      const x = padding + (i / (values.length - 1 || 1)) * chartWidth;
-      const y = padding + chartHeight - ((v - minVal) / range) * chartHeight;
-      return `${x},${y}`;
-    }).join(' ');
+    const colors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6'];
+    const channelNames = Object.keys(channels);
 
     return (
       <div className="w-full overflow-x-auto">
@@ -549,36 +559,52 @@ const DataUpload = () => {
             </g>
           ))}
           
-          {/* 数据线 */}
-          <polyline
-            fill="none"
-            stroke="#3b82f6"
-            strokeWidth="2"
-            points={points}
-          />
-          
-          {/* 数据点 */}
-          {values.slice(0, 50).map((v, i) => {
-            const x = padding + (i / (values.length - 1 || 1)) * chartWidth;
-            const y = padding + chartHeight - ((v - minVal) / range) * chartHeight;
+          {/* 渲染每个通道的数据线 */}
+          {channelNames.map((channelName, chIndex) => {
+            const values = channels[channelName];
+            const points = values.map((v, i) => {
+              const x = padding + (i / (values.length - 1 || 1)) * chartWidth;
+              const y = padding + chartHeight - ((v - minVal) / range) * chartHeight;
+              return `${x},${y}`;
+            }).join(' ');
+            
             return (
-              <circle
-                key={i}
-                cx={x}
-                cy={y}
-                r="3"
-                fill="#3b82f6"
-                className="hover:r-5 transition-all"
-              >
-                <title>{`时间: ${new Date(timestamps[i] * 1000).toLocaleString()}\n值: ${v.toFixed(2)}`}</title>
-              </circle>
+              <g key={channelName}>
+                <polyline
+                  fill="none"
+                  stroke={colors[chIndex % colors.length]}
+                  strokeWidth="2"
+                  points={points}
+                />
+              </g>
             );
           })}
           
-          {/* 标题 */}
+          {/* 标题和图例 */}
           <text x={width / 2} y={20} textAnchor="middle" className="text-sm font-medium fill-gray-700">
-            {title} ({values.length} 个数据点)
+            {title} ({data.length} 个数据点)
           </text>
+          
+          {/* 图例 */}
+          {channelNames.map((channelName, chIndex) => (
+            <g key={`legend-${channelName}`}>
+              <line
+                x1={padding + chIndex * 80}
+                y1={height - 10}
+                x2={padding + chIndex * 80 + 20}
+                y2={height - 10}
+                stroke={colors[chIndex % colors.length]}
+                strokeWidth="2"
+              />
+              <text
+                x={padding + chIndex * 80 + 25}
+                y={height - 6}
+                className="text-xs fill-gray-600"
+              >
+                {channelName}
+              </text>
+            </g>
+          ))}
         </svg>
       </div>
     );

@@ -72,11 +72,25 @@ const Data = () => {
       });
       if (res.code === 200) {
         const points = res.data.points || [];
-        const chartData = points.map((p, index) => ({
-          // 后端返回秒级时间戳，需要转换为毫秒
-          time: new Date(p.timestamp * 1000).toLocaleTimeString(),
-          value: p.fields?.value || p.fields?.ch1 || 0,
-        }));
+        const chartData = points.map((p, index) => {
+          const dataPoint = {
+            // 后端返回秒级时间戳，需要转换为毫秒
+            time: new Date(p.timestamp * 1000).toLocaleString('zh-CN', { 
+              month: '2-digit', 
+              day: '2-digit', 
+              hour: '2-digit', 
+              minute: '2-digit' 
+            }),
+            timestamp: p.timestamp,
+          };
+          // 支持多通道数据
+          if (p.fields) {
+            Object.keys(p.fields).forEach(key => {
+              dataPoint[key] = p.fields[key];
+            });
+          }
+          return dataPoint;
+        });
         setTimeseriesData(chartData);
         toast.success(`获取到 ${points.length} 条数据`);
       } else {
@@ -217,11 +231,26 @@ const Data = () => {
     {
       title: '类型',
       key: 'content_type',
-      render: (val) => (
-        <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs">
-          {val || 'unknown'}
-        </span>
-      ),
+      render: (val, row) => {
+        // 尝试从文件名推断类型
+        let displayType = val || '未知';
+        if (!val && row.bucket_key) {
+          const ext = row.bucket_key.split('.').pop()?.toLowerCase();
+          const typeMap = {
+            'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'png': 'image/png', 'gif': 'image/gif',
+            'mp4': 'video/mp4', 'avi': 'video/avi', 'mov': 'video/quicktime',
+            'mp3': 'audio/mpeg', 'wav': 'audio/wav',
+            'pdf': 'application/pdf', 'doc': 'application/msword', 'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'csv': 'text/csv', 'txt': 'text/plain'
+          };
+          displayType = typeMap[ext] || `文件 (.${ext})`;
+        }
+        return (
+          <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs">
+            {displayType}
+          </span>
+        );
+      },
     },
     {
       title: '大小',
@@ -378,22 +407,41 @@ const Data = () => {
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={timeseriesData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis dataKey="time" stroke="#9ca3af" fontSize={12} />
+                    <XAxis 
+                      dataKey="time" 
+                      stroke="#9ca3af" 
+                      fontSize={11}
+                      angle={-15}
+                      textAnchor="end"
+                      height={60}
+                    />
                     <YAxis stroke="#9ca3af" fontSize={12} />
                     <Tooltip
                       contentStyle={{
                         backgroundColor: '#fff',
                         border: '1px solid #e5e7eb',
                         borderRadius: '8px',
+                        padding: '8px 12px'
                       }}
                     />
-                    <Line
-                      type="monotone"
-                      dataKey="value"
-                      stroke="#3b82f6"
-                      strokeWidth={2}
-                      dot={false}
-                    />
+                    {/* 动态渲染多通道数据 */}
+                    {timeseriesData.length > 0 && Object.keys(timeseriesData[0])
+                      .filter(key => !['time', 'timestamp'].includes(key))
+                      .map((key, index) => {
+                        const colors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6'];
+                        return (
+                          <Line
+                            key={key}
+                            type="monotone"
+                            dataKey={key}
+                            stroke={colors[index % colors.length]}
+                            strokeWidth={2}
+                            dot={false}
+                            name={key}
+                          />
+                        );
+                      })
+                    }
                   </LineChart>
                 </ResponsiveContainer>
               ) : (

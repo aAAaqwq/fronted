@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/common/Toast';
 import { deviceApi, warningApi } from '../api';
@@ -29,6 +30,7 @@ const StatCard = ({ title, value, icon: Icon, color, trend }) => (
 const Dashboard = () => {
   const { user, isAdmin } = useAuth();
   const toast = useToast();
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     total: 0,
     online: 0,
@@ -210,7 +212,12 @@ const Dashboard = () => {
             <div className="bg-white rounded-xl shadow-sm p-6 flex-1">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">最新告警</h3>
-                <span className="text-xs text-primary-600 cursor-pointer hover:underline">查看全部</span>
+                <span 
+                  onClick={() => navigate('/warnings')} 
+                  className="text-xs text-primary-600 cursor-pointer hover:underline"
+                >
+                  查看全部
+                </span>
               </div>
               <div className="space-y-4">
                 {warnings.length > 0 ? (

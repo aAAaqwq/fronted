@@ -26,6 +26,7 @@ const Logs = () => {
     log_id: '',
     type: '',
     level: '',
+    keyword: '',
     start_time: '',
     end_time: '',
   });
@@ -42,6 +43,7 @@ const Logs = () => {
       if (filters.log_id) params.log_id = filters.log_id;
       if (filters.type) params.type = filters.type;
       if (filters.level) params.level = filters.level;
+      if (filters.keyword) params.keyword = filters.keyword;
       if (filters.start_time) params.start_time = filters.start_time;
       if (filters.end_time) params.end_time = filters.end_time;
 
@@ -109,31 +111,34 @@ const Logs = () => {
 
   const getLevelBadge = (level) => {
     const levelMap = {
-      0: { label: 'DEBUG', color: 'bg-gray-100 text-gray-700', icon: Info },
-      1: { label: 'INFO', color: 'bg-blue-100 text-blue-700', icon: Info },
-      2: { label: 'WARN', color: 'bg-yellow-100 text-yellow-700', icon: AlertTriangle },
-      3: { label: 'ERROR', color: 'bg-red-100 text-red-700', icon: XCircle },
+      0: { label: 'Level 0', color: 'bg-gray-100 text-gray-700' },
+      1: { label: 'Level 1', color: 'bg-blue-100 text-blue-700' },
+      2: { label: 'Level 2', color: 'bg-yellow-100 text-yellow-700' },
+      3: { label: 'Level 3', color: 'bg-orange-100 text-orange-700' },
+      4: { label: 'Level 4', color: 'bg-red-100 text-red-700' },
     };
-    const l = levelMap[level] || levelMap[1];
-    const Icon = l.icon;
+    const l = levelMap[level] || { label: `Level ${level}`, color: 'bg-gray-100 text-gray-700' };
     return (
       <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${l.color}`}>
-        <Icon size={12} className="mr-1" />
         {l.label}
       </span>
     );
   };
 
   const getTypeBadge = (type) => {
-    const typeColors = {
-      system: 'bg-purple-100 text-purple-700',
-      user: 'bg-green-100 text-green-700',
-      device: 'bg-orange-100 text-orange-700',
-      data: 'bg-blue-100 text-blue-700',
+    const typeMap = {
+      debug: { label: 'DEBUG', color: 'bg-gray-100 text-gray-700', icon: Info },
+      info: { label: 'INFO', color: 'bg-blue-100 text-blue-700', icon: Info },
+      warning: { label: 'WARNING', color: 'bg-yellow-100 text-yellow-700', icon: AlertTriangle },
+      error: { label: 'ERROR', color: 'bg-red-100 text-red-700', icon: XCircle },
+      critical: { label: 'CRITICAL', color: 'bg-red-200 text-red-900', icon: AlertCircle },
     };
+    const t = typeMap[type] || { label: type?.toUpperCase() || 'UNKNOWN', color: 'bg-gray-100 text-gray-700', icon: Info };
+    const Icon = t.icon;
     return (
-      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${typeColors[type] || 'bg-gray-100 text-gray-700'}`}>
-        {type || 'unknown'}
+      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${t.color}`}>
+        <Icon size={12} className="mr-1" />
+        {t.label}
       </span>
     );
   };
@@ -173,6 +178,15 @@ const Logs = () => {
       ),
     },
     {
+      title: '创建时间',
+      key: 'create_at',
+      render: (val) => (
+        <span className="text-sm text-gray-600">
+          {val ? new Date(val).toLocaleString('zh-CN') : '-'}
+        </span>
+      ),
+    },
+    {
       title: '操作',
       key: 'actions',
       width: '80px',
@@ -189,17 +203,19 @@ const Logs = () => {
   ];
 
   const typeOptions = [
-    { value: 'system', label: '系统日志' },
-    { value: 'user', label: '用户日志' },
-    { value: 'device', label: '设备日志' },
-    { value: 'data', label: '数据日志' },
+    { value: 'debug', label: 'DEBUG' },
+    { value: 'info', label: 'INFO' },
+    { value: 'warning', label: 'WARNING' },
+    { value: 'error', label: 'ERROR' },
+    { value: 'critical', label: 'CRITICAL' },
   ];
 
   const levelOptions = [
-    { value: '0', label: 'DEBUG' },
-    { value: '1', label: 'INFO' },
-    { value: '2', label: 'WARN' },
-    { value: '3', label: 'ERROR' },
+    { value: '0', label: 'Level 0' },
+    { value: '1', label: 'Level 1' },
+    { value: '2', label: 'Level 2' },
+    { value: '3', label: 'Level 3' },
+    { value: '4', label: 'Level 4' },
   ];
 
   // 无权限提示
@@ -250,6 +266,12 @@ const Logs = () => {
               onChange={(e) => setFilters({ ...filters, log_id: e.target.value })}
               placeholder="输入日志ID"
             />
+            <Input
+              label="关键词搜索"
+              value={filters.keyword}
+              onChange={(e) => setFilters({ ...filters, keyword: e.target.value })}
+              placeholder="设备名称/型号/ID/版本/类型"
+            />
             <Select
               label="日志类型"
               value={filters.type}
@@ -283,7 +305,7 @@ const Logs = () => {
               <Button
                 variant="secondary"
                 onClick={() => {
-                  setFilters({ log_id: '', type: '', level: '', start_time: '', end_time: '' });
+                  setFilters({ log_id: '', type: '', level: '', keyword: '', start_time: '', end_time: '' });
                   fetchLogs();
                 }}
                 icon={RefreshCw}

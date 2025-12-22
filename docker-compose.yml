@@ -1,0 +1,153 @@
+version: '3.8'
+
+services:
+  # 前端应用
+  sensor-management-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sensor-management-frontend
+    ports:
+      - "80:80"
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - nginx_logs:/var/log/nginx
+    restart: unless-stopped
+    networks:
+      - sensor-network
+    depends_on:
+      - sensor-backend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.sensor-frontend.rule=Host(`sensor.yourdomain.com`)"
+      - "traefik.http.services.sensor-frontend.loadbalancer.server.port=80"
+
+  # 后端服务（示例配置）
+  sensor-backend:
+    image: sensor-backend:latest
+    container_name: sensor-management-backend
+    ports:
+      - "12000:12000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://user:password@postgres:5432/sensor_db
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=your-jwt-secret
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+    restart: unless-stopped
+    networks:
+      - sensor-network
+    depends_on:
+      - postgres
+      - redis
+      - minio
+
+  # PostgreSQL数据库
+  postgres:
+    image: postgres:15-alpine
+    container_name: sensor-postgres
+    environment:
+      - POSTGRES_DB=sensor_db
+      - POSTGRES_USER=sensor_user
+      - POSTGRES_PASSWORD=sensor_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - sensor-network
+
+  # Redis缓存
+  redis:
+    image: redis:7-alpine
+    container_name: sensor-redis
+    command: redis-server --appendonly yes --requirepass redis_password
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - sensor-network
+
+  # MinIO对象存储
+  minio:
+    image: minio/minio:latest
+    container_name: sensor-minio
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin123
+    volumes:
+      - minio_data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    restart: unless-stopped
+    networks:
+      - sensor-network
+
+  # Nginx负载均衡器（可选）
+  nginx-lb:
+    image: nginx:alpine
+    container_name: sensor-nginx-lb
+    volumes:
+      - ./nginx-lb.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "443:443"
+      - "80:80"
+    restart: unless-stopped
+    networks:
+      - sensor-network
+    depends_on:
+      - sensor-management-frontend
+    profiles:
+      - production
+
+  # 监控服务（可选）
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: sensor-prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+    networks:
+      - sensor-network
+    profiles:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: sensor-grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+    volumes:
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "3001:3000"
+    restart: unless-stopped
+    networks:
+      - sensor-network
+    profiles:
+      - monitoring
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
+  nginx_logs:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  sensor-network:
+    driver: bridge
