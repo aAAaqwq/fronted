@@ -163,8 +163,9 @@ const Devices = () => {
       setSubmitting(true);
       
       // 根据API文档使用正确的字段格式（小写下划线）
+      // 注意：dev_id 保持字符串格式，因为设备 ID 可能超过 JavaScript 的安全整数范围
       const updateData = {
-        dev_id: parseInt(selectedDevice.dev_id),  // API要求integer类型
+        dev_id: String(selectedDevice.dev_id),  // 保持字符串格式避免精度丢失
         dev_name: formData.dev_name,
         dev_type: formData.dev_type,
         model: formData.model || '',
@@ -330,8 +331,9 @@ const Devices = () => {
       }
       
       // 根据API文档使用正确的字段格式（小写下划线）
+      // 注意：dev_id 必须保持为字符串，因为设备 ID 超过了 JavaScript 的安全整数范围
       const updateData = {
-        dev_id: parseInt(statusData.dev_id),  // API要求integer类型
+        dev_id: String(statusData.dev_id),  // 保持字符串格式避免精度丢失
         dev_name: String(deviceName).trim() || `设备_${statusData.dev_id}`,
         dev_type: String(deviceType).trim() || 'temperature',
         dev_status: parseInt(statusData.dev_status),

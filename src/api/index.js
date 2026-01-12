@@ -22,8 +22,9 @@ const transformBigIntRequest = (data) => {
   if (!data) return data;
   // 将对象转为JSON字符串，然后将引号包裹的大数字ID转为数字
   const jsonStr = JSON.stringify(data);
-  // 匹配 "dev_id":"123..." 或 "uid":"123..." 等ID字段，将字符串值转为数字
-  const transformed = jsonStr.replace(/"(dev_id|uid|alert_id|log_id|data_id)":"(\d+)"/g, '"$1":$2');
+  // 注意：dev_id 保持字符串格式（超过 JavaScript 安全整数范围），只转换其他 ID 字段
+  // 匹配 "uid":"123..." 或 "alert_id":"123..." 等ID字段，将字符串值转为数字
+  const transformed = jsonStr.replace(/"(uid|alert_id|log_id|data_id)":"(\d+)"/g, '"$1":$2');
   return transformed;
 };
 

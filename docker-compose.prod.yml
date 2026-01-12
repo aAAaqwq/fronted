@@ -1,0 +1,14 @@
+name: sensor_frontend
+
+services:
+  frontend:
+    container_name: frontend
+    image: aaqwqaa/sensor_frontend:latest
+    ports:
+      - "3001:80"
+    restart: unless-stopped
+    networks: [sensor_frontend_network]
+
+networks:
+  sensor_frontend_network:
+    driver: bridge
