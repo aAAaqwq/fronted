@@ -21,7 +21,7 @@ services:
     container_name: frontend
     image: aaqwqaa/sensor_frontend:latest
     ports:
-      - "3001:80"
+      - "3000:80"
     restart: unless-stopped
     networks: [sensor_frontend_network]
 
@@ -32,4 +32,4 @@ EOF
 
 echo "✅ 准备完成！"
 echo ""
-echo "现在推送到 GitHub main 分支后，服务器会自动部署前端服务到端口 3001"
+echo "现在推送到 GitHub main 分支后，服务器会自动部署前端服务到端口 3000"

@@ -5,7 +5,7 @@ services:
     container_name: frontend
     image: aaqwqaa/sensor_frontend:latest
     ports:
-      - "3001:80"
+      - "3000:80"
     restart: unless-stopped
     networks: [sensor_frontend_network]
 
